@@ -1,5 +1,5 @@
 import httpx
-from logger import init_logger
+from .logger import init_logger
 
 logger = init_logger("utils.requests")
 
