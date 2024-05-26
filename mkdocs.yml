@@ -51,7 +51,7 @@ plugins:
           allow_errors: false
           ignore: ["conf.py"]
           execute_ignore: ["*ignore.ipynb"]
-          
+
 markdown_extensions:
     - admonition
     - abbr
@@ -83,4 +83,6 @@ nav:
         - examples/intro.ipynb
     - API Reference:
           - kal_utils module: kal_utils.md
-          - common module: common.md
+          - requests module: requests.md
+          - logger module: logger.md
+          - handle_response module: handle_response.md
