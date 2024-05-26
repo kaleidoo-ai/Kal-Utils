@@ -2,4 +2,4 @@
 
 __author__ = """Bar Lander"""
 __email__ = "barh@kaleidoo.ai"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
