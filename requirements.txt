@@ -2,3 +2,4 @@ httpx
 fastapi
 bson
 mongoengine
+pymongo
