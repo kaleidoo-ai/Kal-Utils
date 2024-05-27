@@ -1,2 +1,4 @@
 httpx
 fastapi
+bson
+mongoengine
