@@ -1,6 +1,6 @@
 httpx
 fastapi
 bson
-mongoengine
-pymongo
-pydantic
+mongoengine==0.24.2
+pymongo==3.11.4
+
