@@ -1,6 +1,5 @@
 httpx
 fastapi
-bson
 mongoengine==0.24.2
 pymongo==3.11.4
 
