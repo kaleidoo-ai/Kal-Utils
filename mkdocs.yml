@@ -87,3 +87,4 @@ nav:
           - logger module: logger.md
           - handle_response module: handle_response.md
           - mongodb module: mongodb.md
+          - bucket module: bucket.md
