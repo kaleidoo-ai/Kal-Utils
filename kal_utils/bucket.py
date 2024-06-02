@@ -1,5 +1,7 @@
 import base64
 import json
+import random
+import string
 from datetime import timedelta
 
 from google.cloud import storage
@@ -37,13 +39,18 @@ def create_bucket(bucket_name, location = "me-west1" , storage_class = "Standard
     """
     try:
         client = get_storage(credentials_json)
-        bucket = client.bucket(bucket_name)
+        all_chars = string.ascii_letters + string.digits
+        new_name = bucket_name
+        while client.lookup_bucket(new_name) is not None:
+            new_name += random.choice(all_chars)
+
+        bucket = client.bucket(new_name)
         # Set the bucket's location and storage class
         bucket.location = location
         bucket.storage_class = storage_class
 
         bucket = client.create_bucket(bucket)
-        logger.info(f'Bucket {bucket_name} created.')
+        logger.info(f'Bucket {new_name} created.')
         return bucket
     except Exception as e:
         logger.error(f"Error occurred while trying to create bucket: {str(e)}")
