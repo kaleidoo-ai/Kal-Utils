@@ -1773,6 +1773,7 @@
             <span class="s1">&#39;public_url&#39;</span><span class="p">:</span>  <span class="n">blob</span><span class="o">.</span><span class="n">public_url</span>
         <span class="p">}</span>
 
+
         <span class="k">return</span> <span class="n">metadata</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to get file metadata: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -2016,15 +2017,16 @@
         <span class="c1"># Copy the source blob to the destination</span>
         <span class="n">bucket</span><span class="o">.</span><span class="n">copy_blob</span><span class="p">(</span><span class="n">source_blob</span><span class="p">,</span> <span class="n">bucket</span><span class="p">,</span> <span class="n">destination_file_path</span><span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File </span><span class="si">{</span><span class="n">source_file_path</span><span class="si">}</span><span class="s1"> copied to </span><span class="si">{</span><span class="n">destination_file_path</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+        <span class="n">new_blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">get_blob</span><span class="p">(</span><span class="n">destination_file_path</span><span class="p">)</span>
 
         <span class="c1"># Delete the original source blob</span>
         <span class="n">source_blob</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Source file </span><span class="si">{</span><span class="n">source_file_path</span><span class="si">}</span><span class="s1"> deleted.&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">new_blob</span><span class="o">.</span><span class="n">public_url</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to move file: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
 </code></pre></div>
         </details>
     </div>
@@ -2443,10 +2445,10 @@
         <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File uploaded to </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">blob</span><span class="o">.</span><span class="n">public_url</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to upload to bucket: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
 </code></pre></div>
         </details>
     </div>
