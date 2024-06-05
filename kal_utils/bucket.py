@@ -138,6 +138,7 @@ def get_file_metadata(bucket_name, file_path, credentials_json = None):
             'public_url':  blob.public_url
         }
 
+
         return metadata
     except Exception as e:
         logger.error(f"Error occurred while trying to get file metadata: {str(e)}")
@@ -344,10 +345,10 @@ def upload_to_bucket(bucket_name, file_stream, destination_blob_name, credential
         blob.upload_from_file(file_stream)
 
         logger.info(f'File uploaded to {destination_blob_name} in bucket {bucket_name}.')
-        return True
+        return True, blob.public_url
     except Exception as e:
         logger.error(f"Error occurred while trying to upload to bucket: {str(e)}")
-        return False
+        return False, None
 
 
 def move_folder(bucket_name, source_folder, destination_folder, credentials_json = None):
@@ -415,15 +416,16 @@ def move_file(bucket_name, source_file_path, destination_file_path, credentials_
         # Copy the source blob to the destination
         bucket.copy_blob(source_blob, bucket, destination_file_path)
         logger.info(f'File {source_file_path} copied to {destination_file_path}.')
+        new_blob = bucket.get_blob(destination_file_path)
 
         # Delete the original source blob
         source_blob.delete()
         logger.info(f'Source file {source_file_path} deleted.')
 
-        return True
+        return True, new_blob.public_url
     except Exception as e:
         logger.error(f"Error occurred while trying to move file: {str(e)}")
-        return False
+        return False, None
 
 
 def delete_folder(bucket_name, folder_path, credentials_json = None):
