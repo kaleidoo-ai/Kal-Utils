@@ -8,18 +8,11 @@ async def post(url: str, json: Optional[dict] = None, data: Optional[dict] = Non
     try:
         timeout = httpx.Timeout(timeout, connect=connect)
 
-        headers = {}
-
-        if json is not None:
-            headers['Content-Type'] = 'application/json'
-        elif data is not None:
-            headers['Content-Type'] = 'multipart/form-data'
-
         async with httpx.AsyncClient(timeout=timeout) as client:
             if json is not None:
-                response = await client.post(url, json=json, headers=headers)
+                response = await client.post(url, json=json)
             else:
-                response = await client.post(url, data=data, headers=headers)
+                response = await client.post(url, data=data)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
@@ -61,18 +54,11 @@ async def put(url: str, json: Optional[dict] = None, data: Optional[dict] = None
     try:
         timeout = httpx.Timeout(timeout, connect=connect)
 
-        headers = {}
-
-        if json is not None:
-            headers['Content-Type'] = 'application/json'
-        elif data is not None:
-            headers['Content-Type'] = 'multipart/form-data'
-
         async with httpx.AsyncClient(timeout=timeout) as client:
             if json is not None:
-                response = await client.put(url, json=json, headers=headers)
+                response = await client.put(url, json=json)
             else:
-                response = await client.put(url, data=data, headers=headers)
+                response = await client.put(url, data=data)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
