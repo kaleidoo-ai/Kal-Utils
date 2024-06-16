@@ -4,13 +4,21 @@ from .logger import init_logger
 
 logger = init_logger("utils.requests")
 
-async def post(url: str, json: Optional[dict] = None, data: Optional[dict] = None, timeout=20, connect=5) -> dict:
+async def post(
+    url: str,
+    json: Optional[dict] = None,
+    data: Optional[dict] = None,
+    files: Optional[dict] = None,
+    timeout=20,
+    connect=5
+) -> dict:
     try:
         timeout = httpx.Timeout(timeout, connect=connect)
-
         async with httpx.AsyncClient(timeout=timeout) as client:
             if json is not None:
                 response = await client.post(url, json=json)
+            elif files is not None or data is not None:
+                response = await client.post(url, data=data, files=files)
             else:
                 response = await client.post(url, data=data)
             response.raise_for_status()
