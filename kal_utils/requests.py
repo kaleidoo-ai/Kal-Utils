@@ -33,8 +33,8 @@ async def post(
 async def get(url: str, params: dict = None, timeout=20, connect=5) -> dict:
     try:
         timeout = httpx.Timeout(timeout, connect=connect)
-        async with httpx.AsyncClient(timeout) as client:
-            response = await client.get(url, params=params)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, params=params, timeout=timeout)
             response.raise_for_status()
             return response.json()
     except httpx.HTTPStatusError as e:
