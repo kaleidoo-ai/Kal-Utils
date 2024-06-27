@@ -1490,6 +1490,9 @@
 <h2 id="kal_utils.bucket.generate_signed_url" class="doc doc-heading">
 <code class="highlight language-python"><span class="n">generate_signed_url</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">expiration_time_minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">credentials_json</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
+  <span class="doc doc-properties">
+      <small class="doc doc-property doc-property-async"><code>async</code></small>
+  </span>
 
 <a href="#kal_utils.bucket.generate_signed_url" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -1545,7 +1548,7 @@
 </table>
         <details class="quote">
           <summary>Source code in <code>kal_utils/bucket.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">generate_signed_url</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">expiration_time_minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">credentials_json</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+          <div class="highlight"><pre><span></span><code><span class="k">async</span> <span class="k">def</span> <span class="nf">generate_signed_url</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">expiration_time_minutes</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span> <span class="n">credentials_json</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generates a signed URL for a file in Google Cloud Storage.</span>
 
@@ -1571,7 +1574,6 @@
             <span class="n">method</span><span class="o">=</span><span class="s2">&quot;GET&quot;</span>
         <span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Signed URL for file </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">url</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">url</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to generate signed url: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
