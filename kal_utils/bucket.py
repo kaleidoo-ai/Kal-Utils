@@ -486,7 +486,7 @@ def delete_file(bucket_name, file_path, credentials_json = None):
         return False
 
 
-def generate_signed_url(bucket_name, file_path, expiration_time_minutes=60, credentials_json = None):
+async def generate_signed_url(bucket_name, file_path, expiration_time_minutes=60, credentials_json = None):
     """
         Generates a signed URL for a file in Google Cloud Storage.
 
@@ -512,7 +512,6 @@ def generate_signed_url(bucket_name, file_path, expiration_time_minutes=60, cred
             method="GET"
         )
 
-        logger.info(f'Signed URL for file {file_path} in bucket {bucket_name}: {url}')
         return url
     except Exception as e:
         logger.error(f"Error occurred while trying to generate signed url: {str(e)}")
