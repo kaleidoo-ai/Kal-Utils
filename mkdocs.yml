@@ -88,3 +88,4 @@ nav:
           - handle_response module: handle_response.md
           - mongodb module: mongodb.md
           - bucket module: bucket.md
+          - time_zone module: time_zone.md
