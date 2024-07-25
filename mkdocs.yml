@@ -89,3 +89,4 @@ nav:
           - mongodb module: mongodb.md
           - bucket module: bucket.md
           - time_zone module: time_zone.md
+          - sorts module: sorts.md

@@ -1,6 +1,11 @@
 from datetime import datetime
 import pytz
 
+def parse_date_str(date_str):
+    if date_str:
+        return datetime.strptime(date_str, "%d/%m/%Y %H:%M:%S")
+    return datetime.min
+
 def get_time_israel():
     israel_tz = pytz.timezone('Asia/Jerusalem')
     israel_time = datetime.now(israel_tz)
