@@ -3,18 +3,29 @@ import json
 import random
 import string
 from datetime import timedelta
-
 from google.cloud import storage
 from google.oauth2 import service_account
 from .logger import init_logger
+import os
 
 logger = init_logger("utils.bucket")
 
-def get_storage(credentials_json = None):
+def get_storage(credentials_json=None):
     try:
         if credentials_json:
-            decoded_key = base64.b64decode(credentials_json).decode('utf-8')
-            service_account_info = json.loads(decoded_key)
+            if os.path.isfile(credentials_json):
+                logger.info("Using credentials from file path")
+                with open(credentials_json, 'r') as f:
+                    service_account_info = json.load(f)
+            else:
+                try:
+                    logger.info("Trying to decode base64 credentials")
+                    decoded_key = base64.b64decode(credentials_json).decode('utf-8')
+                    service_account_info = json.loads(decoded_key)
+                except (base64.binascii.Error, ValueError) as e:
+                    logger.error("Failed to decode base64 string, using it as JSON string")
+                    service_account_info = json.loads(credentials_json)
+
             credentials = service_account.Credentials.from_service_account_info(service_account_info)
             storage_client = storage.Client(credentials=credentials)
         else:

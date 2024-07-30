@@ -3,4 +3,4 @@
 from . import requests, logger, handle_response, mongodb, time_zone, bucket
 __author__ = """Bar Lander"""
 __email__ = "barh@kaleidoo.ai"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
