@@ -1,11 +1,9 @@
-from typing import TypeVar, Type, Callable, Tuple, Optional
-from fastapi import status, Request
+from typing import Any, Callable, Tuple, Optional
+from fastapi import Request, status
 from pydantic import BaseModel, ValidationError
 
-T = TypeVar('T', bound=BaseModel)
-
-def parse_json_request(model: Type[T]) -> Callable[[Request], Tuple[Optional[T], list[str]]]:
-    async def parser(request: Request) -> Tuple[Optional[T], list[str]]:
+def parse_json_request(model: Any) -> Callable[[Request], Tuple[Optional[Any], list[str]]]:
+    async def parser(request: Request) -> Tuple[Optional[Any], list[str]]:
         try:
             json_data = await request.json()
             parsed_data = model(**json_data)
