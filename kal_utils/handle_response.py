@@ -1,4 +1,27 @@
-from fastapi import status
+from typing import TypeVar, Type, Callable, Tuple, Optional
+from fastapi import status, Request
+from pydantic import BaseModel, ValidationError
+
+T = TypeVar('T', bound=BaseModel)
+
+def parse_json_request(model: Type[T]) -> Callable[[Request], Tuple[Optional[T], list[str]]]:
+    async def parser(request: Request) -> Tuple[Optional[T], list[str]]:
+        try:
+            json_data = await request.json()
+            parsed_data = model(**json_data)
+            return parsed_data, []
+        except ValidationError as e:
+            error_messages = []
+            for error in e.errors():
+                field = ".".join(str(loc) for loc in error["loc"])
+                message = error["msg"]
+                error_messages.append(f"{field}: {message}")
+            return None, error_messages
+        except Exception as e:
+            return None, [f"An unexpected error occurred: {str(e)}"]
+
+    return parser
+
 
 def return_response(res=None, error=None, data=False):
     if error:

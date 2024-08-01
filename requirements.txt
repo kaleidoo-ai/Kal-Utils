@@ -4,4 +4,5 @@ mongoengine==0.24.2
 pymongo==3.11.4
 google-cloud-storage
 pytz
+pydantic
 
