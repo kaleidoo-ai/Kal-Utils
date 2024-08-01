@@ -1,5 +1,45 @@
+import re
 from bson import ObjectId
+from bson.errors import InvalidId
 from mongoengine import Document, ReferenceField, EmbeddedDocument
+
+class ValidObjectId(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v, field):
+        if not isinstance(v, str):
+            raise ValueError('Invalid ObjectId: must be a string')
+
+        try:
+            ObjectId(v)
+        except InvalidId:
+            raise ValueError('Invalid ObjectId format')
+
+        return v
+
+
+class ValidDomain(str):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v, field):
+        if not isinstance(v, str):
+            raise ValueError('Domain must be a string')
+
+        # Regular expression for domain validation
+        domain_regex = re.compile(
+            r'^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$'
+        )
+
+        if not domain_regex.match(v):
+            raise ValueError('Invalid domain format')
+
+        return v
 
 def mongo_to_dict(obj):
     if not obj:
