@@ -516,6 +516,10 @@ async def generate_signed_url(bucket_name, file_path, expiration_time_minutes=60
         # Get the blob (file) object
         blob = bucket.blob(file_path)
 
+        if not blob.exists():
+            logger.warning(f"File {file_path} does not exist in bucket {bucket_name}")
+            return None
+
         # Generate a signed URL for the blob
         url = blob.generate_signed_url(
             version="v4",
