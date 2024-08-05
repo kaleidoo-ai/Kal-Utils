@@ -11,9 +11,10 @@ def parse_json_request(model):
         except ValidationError as e:
             error_messages = []
             for error in e.errors():
-                field = ".".join(str(loc) for loc in error["loc"])
+                # field = ".".join(str(loc) for loc in error["loc"])
                 message = error["msg"].replace("Value error,", "")
-                error_messages.append(f"{field}: {message}")
+                # error_messages.append(f"{field}: {message}")
+                error_messages.append(message)
             return None, error_messages
         except Exception as e:
             return None, [f"An unexpected error occurred: {str(e)}"]
