@@ -12,7 +12,7 @@ def parse_json_request(model):
             error_messages = []
             for error in e.errors():
                 field = ".".join(str(loc) for loc in error["loc"])
-                message = error["msg"]
+                message = error["msg"].replace("Value error,", "")
                 error_messages.append(f"{field}: {message}")
             return None, error_messages
         except Exception as e:
