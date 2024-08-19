@@ -1,6 +1,9 @@
 from typing import Optional
+from urllib.parse import urlparse, urlunparse
 import httpx
 from .logger import init_logger
+import json
+from fastapi import Request
 
 logger = init_logger("utils.requests")
 
@@ -74,4 +77,54 @@ async def put(url: str, json: Optional[dict] = None, data: Optional[dict] = None
         raise
     except Exception as e:
         logger.error(f"Request error: {e} - URL: {url}")
+        raise
+
+
+async def pass_auth_request(request: Request, product: str, sense_domain: str, timeout=20, connect=5):
+    new_url = ""
+    try:
+        original_url = request.url
+        parsed_url = urlparse(str(original_url))
+
+        new_path = parsed_url.path.replace('/api', '/auth', 1)
+
+        if not sense_domain.startswith(('http://', 'https://')):
+            sense_domain = f"{parsed_url.scheme}://{sense_domain}"
+
+        parsed_domain = urlparse(sense_domain)
+
+        new_url = urlunparse((
+            parsed_domain.scheme,
+            parsed_domain.netloc,
+            new_path,
+            parsed_url.params,
+            parsed_url.query,
+            parsed_url.fragment
+        ))
+
+        try:
+            body = await request.json()
+        except json.JSONDecodeError:
+            body = {}
+
+        body['product'] = product
+
+        headers = {k: v for k, v in request.headers.items()
+                   if k.lower() not in ['host', 'content-length', 'content-type']}
+        headers['content-type'] = 'application/json'
+
+        timeout = httpx.Timeout(timeout, connect=connect)
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            response = await client.post(
+                new_url,
+                json=body,
+                headers=headers
+            )
+
+        return response
+    except httpx.HTTPStatusError as e:
+        logger.error(f"HTTP error: {e.response.status_code} - {e.response.text} - URL: {new_url}")
+        raise
+    except Exception as e:
+        logger.error(f"Request error: {e} - URL: {new_url}")
         raise
