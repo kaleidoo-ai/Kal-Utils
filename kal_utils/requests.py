@@ -107,7 +107,7 @@ async def pass_auth_request(request: Request, product: str, sense_domain: str, t
         except json.JSONDecodeError:
             body = {}
 
-        body['product'] = product
+        auth_body = {**body, 'product': product}
 
         headers = {k: v for k, v in request.headers.items()
                    if k.lower() not in ['host', 'content-length', 'content-type']}
@@ -117,7 +117,7 @@ async def pass_auth_request(request: Request, product: str, sense_domain: str, t
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.post(
                 new_url,
-                json=body,
+                json=auth_body,
                 headers=headers
             )
 
