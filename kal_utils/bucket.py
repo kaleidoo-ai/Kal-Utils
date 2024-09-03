@@ -156,6 +156,39 @@ def get_file_metadata(bucket_name, file_path, credentials_json = None):
         return {}
 
 
+def read_file(bucket_name: str, file_path: str) -> str:
+    """
+    Reads the content of a file from a Google Cloud Storage bucket.
+
+    Args:
+        bucket_name (str): The name of the bucket.
+        file_path (str): The path to the file within the bucket.
+
+    Returns:
+        str: The content of the file as a string.
+
+    Raises:
+        Exception: If there's an error reading the file.
+    """
+    try:
+        # Create a client
+        client = storage.Client()
+
+        # Get the bucket
+        bucket = client.get_bucket(bucket_name)
+
+        # Get the blob (file)
+        blob = bucket.blob(file_path)
+
+        # Download the file to a string
+        content = blob.download_as_text()
+
+        return content
+
+    except Exception as e:
+        raise Exception(f"Error reading file from GCS: {str(e)}")
+
+
 def copy_file(bucket_name, source_file_path, destination_file_path, credentials_json = None):
     """
         Copies a file from one location to another within the same Google Cloud Storage bucket.
