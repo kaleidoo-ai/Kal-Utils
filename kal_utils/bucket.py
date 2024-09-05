@@ -156,7 +156,7 @@ def get_file_metadata(bucket_name, file_path, credentials_json = None):
         return {}
 
 
-def read_file(bucket_name: str, file_path: str) -> str:
+def read_file(bucket_name: str, file_path: str, credentials_json = None) -> str:
     """
     Reads the content of a file from a Google Cloud Storage bucket.
 
@@ -172,7 +172,7 @@ def read_file(bucket_name: str, file_path: str) -> str:
     """
     try:
         # Create a client
-        client = storage.Client()
+        client = get_storage(credentials_json)
 
         # Get the bucket
         bucket = client.get_bucket(bucket_name)
