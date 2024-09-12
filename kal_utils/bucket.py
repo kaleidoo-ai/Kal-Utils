@@ -584,3 +584,42 @@ def list_buckets(credentials_json = None):
     except Exception as e:
         logger.error(f"Error occurred while trying to list buckets: {str(e)}")
         return []
+
+
+def download_file(bucket_name, file_path, local_path=None, credentials_json=None):
+    """
+    Downloads a file from a Google Cloud Storage bucket.
+
+    Args:
+        bucket_name (str): The name of the bucket.
+        file_path (str): The full path to the file within the bucket.
+        local_path (str, optional): The local path where the file should be saved.
+            If not provided, the file content will be returned as bytes.
+        credentials_json (str, optional): The path to the credentials JSON file or the JSON string itself.
+
+    Returns:
+        Union[bytes, str, None]: If local_path is not provided, returns the file content as bytes.
+            If local_path is provided, returns the path to the saved file.
+            If some error occurs during the download, returns None.
+    """
+    try:
+        client = get_storage(credentials_json)
+        bucket = client.get_bucket(bucket_name)
+        blob = bucket.blob(file_path)
+
+        if not blob.exists():
+            logger.error(f"File {file_path} not found in bucket {bucket_name}")
+            return None
+
+        if local_path:
+            blob.download_to_filename(local_path)
+            logger.info(f"File {file_path} downloaded to {local_path}")
+            return local_path
+        else:
+            content = blob.download_as_bytes()
+            logger.info(f"File {file_path} downloaded as bytes")
+            return content
+
+    except Exception as e:
+        logger.error(f"Error occurred while trying to download file: {str(e)}")
+        return None
