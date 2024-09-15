@@ -91,3 +91,4 @@ nav:
           - time_zone module: time_zone.md
           - sorts module: sorts.md
           - helper module: helper.md
+          - storage module: storage.md
