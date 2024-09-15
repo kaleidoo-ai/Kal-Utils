@@ -1,9 +1,9 @@
 import os
+from io import BytesIO
 from .base_storage import  BaseStorage
 from .gcs_storage import GCSStorage
 from .minio_storage import MinIOStorage
 
-__all__ = ['BaseStorage', 'GCSStorage', 'MinIOStorage']
 
 def get_storage_client(credentials_json = None) -> BaseStorage:
     storage_type = os.environ.get('STORAGE_TYPE', 'GCS').upper()
@@ -15,3 +15,4 @@ def get_storage_client(credentials_json = None) -> BaseStorage:
         raise ValueError(f"Unsupported storage type: {storage_type}")
 
 
+__all__ = ['BaseStorage', 'GCSStorage', 'MinIOStorage', 'get_storage_client']

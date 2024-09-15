@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 class BaseStorage(ABC):
     @abstractmethod
-    def create_bucket(self, bucket_name, location, storage_class):
+    def create_bucket(self, bucket_name, location = "", storage_class = ""):
         pass
 
     @abstractmethod
