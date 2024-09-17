@@ -24,17 +24,17 @@ class MinIOStorage(BaseStorage):
                     minio_creds = json.loads(credentials_json)
 
             self.client = Minio(
-                minio_creds['endpoint'],
-                access_key=minio_creds['access_key'],
-                secret_key=minio_creds['secret_key'],
-                secure=minio_creds.get('secure', True)
+                minio_creds['url'],
+                access_key=minio_creds['accessKey'],
+                secret_key=minio_creds['secretKey'],
+                secure=minio_creds.get('secure', False)
             )
         else:
             self.client = Minio(
                 os.environ.get('MINIO_ENDPOINT'),
                 access_key=os.environ.get('MINIO_ACCESS_KEY'),
                 secret_key=os.environ.get('MINIO_SECRET_KEY'),
-                secure=True
+                secure=os.environ.get('MINIO_SECURE', "false") == "true"
             )
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
