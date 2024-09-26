@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.38">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.8c3ca2c6.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
@@ -1640,7 +1640,7 @@
         <span class="k">pass</span>
 
     <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">):</span>
         <span class="k">pass</span>
 
     <span class="nd">@abstractmethod</span>
@@ -2025,7 +2025,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to set file permissions: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Uploads a file to a bucket in Google Cloud Storage.</span>
 
@@ -2042,7 +2042,7 @@
             <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
 
             <span class="c1"># Create a blob object for the destination</span>
-            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">)</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
 
             <span class="c1"># Upload the file to the destination</span>
             <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">)</span>
@@ -3742,7 +3742,7 @@ If not provided, the file content will be returned as bytes.</p></td>
 
 
 <h2 id="kal_utils.storage.gcs_storage.GCSStorage.upload_to_bucket" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">)</span></code>
 
 
 <a href="#kal_utils.storage.gcs_storage.GCSStorage.upload_to_bucket" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -3800,7 +3800,7 @@ If not provided, the file content will be returned as bytes.</p></td>
 </table>
         <details class="quote">
           <summary>Source code in <code>kal_utils/storage/gcs_storage.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Uploads a file to a bucket in Google Cloud Storage.</span>
 
@@ -3817,7 +3817,7 @@ If not provided, the file content will be returned as bytes.</p></td>
         <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
 
         <span class="c1"># Create a blob object for the destination</span>
-        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
 
         <span class="c1"># Upload the file to the destination</span>
         <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">)</span>
@@ -4200,7 +4200,7 @@ If not provided, the file content will be returned as bytes.</p></td>
             <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while trying to set file permissions: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Uploads a file to a bucket in MinIO.</span>
 
@@ -4224,7 +4224,8 @@ If not provided, the file content will be returned as bytes.</p></td>
                 <span class="n">bucket_name</span><span class="p">,</span>
                 <span class="n">destination_blob_name</span><span class="p">,</span>
                 <span class="n">file_stream</span><span class="p">,</span>
-                <span class="n">file_size</span>
+                <span class="n">file_size</span><span class="p">,</span>
+                <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span>
             <span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File uploaded to </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -5996,7 +5997,7 @@ that affects the specified object.</p>
 
 
 <h2 id="kal_utils.storage.minio_storage.MinIOStorage.upload_to_bucket" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">)</span></code>
 
 
 <a href="#kal_utils.storage.minio_storage.MinIOStorage.upload_to_bucket" class="headerlink" title="Permanent link">&para;</a></h2>
@@ -6054,7 +6055,7 @@ that affects the specified object.</p>
 </table>
         <details class="quote">
           <summary>Source code in <code>kal_utils/storage/minio_storage.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">):</span>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">upload_to_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_stream</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;application/octet-stream&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Uploads a file to a bucket in MinIO.</span>
 
@@ -6078,7 +6079,8 @@ that affects the specified object.</p>
             <span class="n">bucket_name</span><span class="p">,</span>
             <span class="n">destination_blob_name</span><span class="p">,</span>
             <span class="n">file_stream</span><span class="p">,</span>
-            <span class="n">file_size</span>
+            <span class="n">file_size</span><span class="p">,</span>
+            <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span>
         <span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File uploaded to </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -6221,10 +6223,10 @@ that affects the specified object.</p>
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
       
         <script src="../js/timeago.min.js"></script>
       
