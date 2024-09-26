@@ -6,3 +6,4 @@ google-cloud-storage
 pytz
 pydantic
 minio==7.2.8
+tqdm

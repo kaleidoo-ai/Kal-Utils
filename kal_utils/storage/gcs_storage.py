@@ -310,14 +310,16 @@ class GCSStorage(BaseStorage):
             logger.error(f"Error occurred while trying to set file permissions: {str(e)}")
             return False
 
-    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name, content_type='application/octet-stream'):
+    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name,
+                         content_type='application/octet-stream'):
         """
-        Uploads a file to a bucket in Google Cloud Storage.
+        Uploads a file to a bucket in Google Cloud Storage using chunked upload.
 
         Args:
             bucket_name (str): The name of the bucket.
             file_stream (BytesIO): The byte stream of the file to upload.
             destination_blob_name (str): The destination path and file name in the bucket.
+            content_type (str): The content type of the file (default: 'application/octet-stream').
 
         Returns:
             tuple: (bool, str) - (True if the file was uploaded successfully, False otherwise;
@@ -325,12 +327,26 @@ class GCSStorage(BaseStorage):
         """
         try:
             bucket = self.storage_client.get_bucket(bucket_name)
-
-            # Create a blob object for the destination
             blob = bucket.blob(destination_blob_name)
 
-            # Upload the file to the destination
-            blob.upload_from_file(file_stream, content_type=content_type)
+            chunk_size = 256 * 1024  # 256 KB chunks
+            file_stream.seek(0, 2)
+            file_size = file_stream.tell()
+            file_stream.seek(0)
+
+            with blob.open('wb') as f:
+                uploaded_bytes = 0
+                while True:
+                    chunk = file_stream.read(chunk_size)
+                    if not chunk:
+                        break
+                    f.write(chunk)
+                    uploaded_bytes += len(chunk)
+                    progress = (uploaded_bytes / file_size) * 100
+                    logger.info(f'Upload progress: {progress:.2f}%')
+
+            blob.content_type = content_type
+            blob.patch()
 
             logger.info(f'File uploaded to {destination_blob_name} in bucket {bucket_name}.')
             return True, blob.public_url
