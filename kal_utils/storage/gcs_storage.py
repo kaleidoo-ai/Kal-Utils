@@ -354,6 +354,25 @@ class GCSStorage(BaseStorage):
             logger.error(f"Error occurred while trying to upload to bucket: {str(e)}")
             return False, None
 
+    def upload_from_local(self, bucket_name: str, file_path: str, destination_blob_name: str,
+                          content_type='application/octet-stream'):
+        """Upload a file to the GCS bucket."""
+        try:
+            # Get the bucket from GCS
+            bucket = self.storage_client.get_bucket(bucket_name)
+
+            # Create a blob object with the destination name
+            blob = bucket.blob(destination_blob_name)
+
+            # Upload the file from the local path
+            blob.upload_from_filename(file_path, content_type=content_type)
+
+            logger.info(f"File {file_path} uploaded to {destination_blob_name} in bucket {bucket_name}.")
+            return blob
+        except Exception as e:
+            logger.error(f"Error while uploading to GCS: {str(e)}", exc_info=True)
+            return None
+
     def move_folder(self, bucket_name, source_folder, destination_folder):
         """
         Moves all files from one folder to another within the same Google Cloud Storage bucket.

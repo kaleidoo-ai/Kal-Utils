@@ -46,6 +46,11 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
+    def upload_from_local(self, bucket_name: str, file_path: str, destination_blob_name: str,
+                          content_type='application/octet-stream'):
+        pass
+
+    @abstractmethod
     def move_folder(self, bucket_name, source_folder, destination_folder):
         pass
 
