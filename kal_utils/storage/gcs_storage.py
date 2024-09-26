@@ -327,10 +327,10 @@ class GCSStorage(BaseStorage):
             bucket = self.storage_client.get_bucket(bucket_name)
 
             # Create a blob object for the destination
-            blob = bucket.blob(destination_blob_name, content_type=content_type)
+            blob = bucket.blob(destination_blob_name)
 
             # Upload the file to the destination
-            blob.upload_from_file(file_stream)
+            blob.upload_from_file(file_stream, content_type=content_type)
 
             logger.info(f'File uploaded to {destination_blob_name} in bucket {bucket_name}.')
             return True, blob.public_url
