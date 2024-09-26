@@ -42,7 +42,7 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name):
+    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name, content_type='application/octet-stream'):
         pass
 
     @abstractmethod

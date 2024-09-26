@@ -353,7 +353,7 @@ class MinIOStorage(BaseStorage):
             logger.error(f"Error occurred while trying to set file permissions: {str(e)}")
             return False
 
-    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name):
+    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name, content_type='application/octet-stream'):
         """
         Uploads a file to a bucket in MinIO.
 
@@ -377,7 +377,8 @@ class MinIOStorage(BaseStorage):
                 bucket_name,
                 destination_blob_name,
                 file_stream,
-                file_size
+                file_size,
+                content_type=content_type
             )
 
             logger.info(f'File uploaded to {destination_blob_name} in bucket {bucket_name}.')

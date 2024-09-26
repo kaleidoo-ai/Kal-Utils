@@ -310,7 +310,7 @@ class GCSStorage(BaseStorage):
             logger.error(f"Error occurred while trying to set file permissions: {str(e)}")
             return False
 
-    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name):
+    def upload_to_bucket(self, bucket_name, file_stream, destination_blob_name, content_type='application/octet-stream'):
         """
         Uploads a file to a bucket in Google Cloud Storage.
 
@@ -327,7 +327,7 @@ class GCSStorage(BaseStorage):
             bucket = self.storage_client.get_bucket(bucket_name)
 
             # Create a blob object for the destination
-            blob = bucket.blob(destination_blob_name)
+            blob = bucket.blob(destination_blob_name, content_type=content_type)
 
             # Upload the file to the destination
             blob.upload_from_file(file_stream)
