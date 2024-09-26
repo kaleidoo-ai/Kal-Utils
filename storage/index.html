@@ -2042,10 +2042,10 @@
             <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
 
             <span class="c1"># Create a blob object for the destination</span>
-            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
+            <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">)</span>
 
             <span class="c1"># Upload the file to the destination</span>
-            <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">)</span>
+            <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File uploaded to </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">blob</span><span class="o">.</span><span class="n">public_url</span>
@@ -3817,10 +3817,10 @@ If not provided, the file content will be returned as bytes.</p></td>
         <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_client</span><span class="o">.</span><span class="n">get_bucket</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">)</span>
 
         <span class="c1"># Create a blob object for the destination</span>
-        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">blob</span><span class="p">(</span><span class="n">destination_blob_name</span><span class="p">)</span>
 
         <span class="c1"># Upload the file to the destination</span>
-        <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">)</span>
+        <span class="n">blob</span><span class="o">.</span><span class="n">upload_from_file</span><span class="p">(</span><span class="n">file_stream</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="n">content_type</span><span class="p">)</span>
 
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;File uploaded to </span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s1"> in bucket </span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">blob</span><span class="o">.</span><span class="n">public_url</span>
