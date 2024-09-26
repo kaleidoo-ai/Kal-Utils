@@ -392,6 +392,29 @@ class MinIOStorage(BaseStorage):
             logger.error(f"Error occurred while trying to upload to bucket: {str(e)}")
             return False, None
 
+    def upload_from_local(self, bucket_name: str, file_path: str, destination_blob_name: str,
+                          content_type='application/octet-stream'):
+        """Upload a file to the MinIO bucket."""
+        try:
+            # Get the size of the file to upload
+            file_size = os.stat(file_path).st_size
+
+            # Open the file and upload it using MinIO's `put_object`
+            with open(file_path, 'rb') as file_data:
+                self.client.put_object(
+                    bucket_name=bucket_name,
+                    object_name=destination_blob_name,
+                    data=file_data,
+                    length=file_size,
+                    content_type=content_type
+                )
+
+            logger.info(f"File {file_path} uploaded to {destination_blob_name} in bucket {bucket_name}.")
+            return True
+        except Exception as e:
+            logger.error(f"Error while uploading to MinIO: {str(e)}", exc_info=True)
+            return False
+
     def move_folder(self, bucket_name, source_folder, destination_folder):
         """
         Moves all files from one folder to another within the same MinIO bucket.
