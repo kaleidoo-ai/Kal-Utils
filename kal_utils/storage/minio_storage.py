@@ -29,6 +29,7 @@ class MinIOStorage(BaseStorage):
                 secret_key=minio_creds['secretKey'],
                 secure=minio_creds.get('secure', False)
             )
+            self.url = f"http://{minio_creds['url']}"
         else:
             self.client = Minio(
                 os.environ.get('MINIO_ENDPOINT'),
@@ -36,6 +37,7 @@ class MinIOStorage(BaseStorage):
                 secret_key=os.environ.get('MINIO_SECRET_KEY'),
                 secure=os.environ.get('MINIO_SECURE', "false") == "true"
             )
+            self.url = f"http://{os.environ.get('MINIO_ENDPOINT')}"
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
         try:
@@ -104,7 +106,7 @@ class MinIOStorage(BaseStorage):
                 'updated': stat.last_modified,
                 'etag': stat.etag,
                 'version_id': stat.version_id,
-                'public_url': self.client.presigned_get_object(bucket_name, file_path)
+                'public_url': f"{self.url}/{bucket_name}/{file_path}"
             }
 
             return metadata
@@ -385,7 +387,7 @@ class MinIOStorage(BaseStorage):
 
             # Generate a presigned URL for the uploaded object
             # Note: This URL will expire after the specified time
-            url = self.client.presigned_get_object(bucket_name, destination_blob_name)
+            url = f"{self.url}/{bucket_name}/{destination_blob_name}"
 
             return True, url
         except Exception as e:
@@ -483,7 +485,7 @@ class MinIOStorage(BaseStorage):
 
                 # Generate a URL for the moved file
                 # Note: This generates a pre-signed URL that will expire
-                url = self.client.presigned_get_object(bucket_name, destination_file_path)
+                url = f"{self.url}/{bucket_name}/{destination_file_path}"
 
                 return True, url
             else:
