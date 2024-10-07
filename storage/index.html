@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.38">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
     
     
       
@@ -4017,6 +4017,7 @@ If not provided, the file content will be returned as bytes.</p></td>
                 <span class="n">secret_key</span><span class="o">=</span><span class="n">minio_creds</span><span class="p">[</span><span class="s1">&#39;secretKey&#39;</span><span class="p">],</span>
                 <span class="n">secure</span><span class="o">=</span><span class="n">minio_creds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;secure&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
             <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">minio_creds</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">Minio</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MINIO_ENDPOINT&#39;</span><span class="p">),</span>
@@ -4024,6 +4025,7 @@ If not provided, the file content will be returned as bytes.</p></td>
                 <span class="n">secret_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MINIO_SECRET_KEY&#39;</span><span class="p">),</span>
                 <span class="n">secure</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MINIO_SECURE&#39;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
             <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;http://</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;MINIO_ENDPOINT&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="k">def</span> <span class="nf">create_bucket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bucket_name</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s2">&quot;me-west1&quot;</span><span class="p">,</span> <span class="n">storage_class</span><span class="o">=</span><span class="s2">&quot;Standard&quot;</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
@@ -4092,7 +4094,7 @@ If not provided, the file content will be returned as bytes.</p></td>
                 <span class="s1">&#39;updated&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">last_modified</span><span class="p">,</span>
                 <span class="s1">&#39;etag&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">etag</span><span class="p">,</span>
                 <span class="s1">&#39;version_id&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">version_id</span><span class="p">,</span>
-                <span class="s1">&#39;public_url&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+                <span class="s1">&#39;public_url&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">}</span>
 
             <span class="k">return</span> <span class="n">metadata</span>
@@ -4373,7 +4375,7 @@ If not provided, the file content will be returned as bytes.</p></td>
 
             <span class="c1"># Generate a presigned URL for the uploaded object</span>
             <span class="c1"># Note: This URL will expire after the specified time</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span>
 
             <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">url</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -4471,7 +4473,7 @@ If not provided, the file content will be returned as bytes.</p></td>
 
                 <span class="c1"># Generate a URL for the moved file</span>
                 <span class="c1"># Note: This generates a pre-signed URL that will expire</span>
-                <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">destination_file_path</span><span class="p">)</span>
+                <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">destination_file_path</span><span class="si">}</span><span class="s2">&quot;</span>
 
                 <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">url</span>
             <span class="k">else</span><span class="p">:</span>
@@ -5313,7 +5315,7 @@ If not provided, the file content will be returned as bytes.</p></td>
             <span class="s1">&#39;updated&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">last_modified</span><span class="p">,</span>
             <span class="s1">&#39;etag&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">etag</span><span class="p">,</span>
             <span class="s1">&#39;version_id&#39;</span><span class="p">:</span> <span class="n">stat</span><span class="o">.</span><span class="n">version_id</span><span class="p">,</span>
-            <span class="s1">&#39;public_url&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">)</span>
+            <span class="s1">&#39;public_url&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="n">metadata</span>
@@ -5557,7 +5559,7 @@ If not provided, the file content will be returned as bytes.</p></td>
 
             <span class="c1"># Generate a URL for the moved file</span>
             <span class="c1"># Note: This generates a pre-signed URL that will expire</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">destination_file_path</span><span class="p">)</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">destination_file_path</span><span class="si">}</span><span class="s2">&quot;</span>
 
             <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">url</span>
         <span class="k">else</span><span class="p">:</span>
@@ -6297,7 +6299,7 @@ that affects the specified object.</p>
 
         <span class="c1"># Generate a presigned URL for the uploaded object</span>
         <span class="c1"># Note: This URL will expire after the specified time</span>
-        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">presigned_get_object</span><span class="p">(</span><span class="n">bucket_name</span><span class="p">,</span> <span class="n">destination_blob_name</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">bucket_name</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">destination_blob_name</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="n">url</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -6436,7 +6438,7 @@ that affects the specified object.</p>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tracking", "navigation.top", "search.highlight", "search.share"], "search": "../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.d6f25eb3.min.js"></script>
+      <script src="../assets/javascripts/bundle.525ec568.min.js"></script>
       
         <script src="../js/timeago.min.js"></script>
       
