@@ -9288,18 +9288,29 @@ the function execution outcome.</p>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Dynamically load and return a dictionary of available metrics classes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">base_directory</span> <span class="o">=</span> <span class="s1">&#39;prometheus&#39;</span>
-    <span class="n">base_module</span> <span class="o">=</span> <span class="s1">&#39;prometheus&#39;</span>
+    <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">prometheus</span>
+    <span class="n">metrics_classes</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;LocationRequestCounter&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">locationRequestCounter</span><span class="o">.</span><span class="n">LocationRequestCounter</span><span class="p">,</span>
+        <span class="s2">&quot;RequestCounter&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">requestMetrics</span><span class="o">.</span><span class="n">RequestCounter</span><span class="p">,</span>
+        <span class="s2">&quot;RequestHist&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">requestMetrics</span><span class="o">.</span><span class="n">RequestHist</span><span class="p">,</span>
+        <span class="s2">&quot;ServerErrorMetrics&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">requestMetrics</span><span class="o">.</span><span class="n">ServerErrorMetrics</span><span class="p">,</span>
+        <span class="s2">&quot;CpuUsageMonitor&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">systemMetrics</span><span class="o">.</span><span class="n">CpuUsageMonitor</span><span class="p">,</span>
+        <span class="s2">&quot;MemoryUsageMonitor&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">systemMetrics</span><span class="o">.</span><span class="n">MemoryUsageMonitor</span><span class="p">,</span>
+        <span class="s2">&quot;DiskUsageMonitor&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">systemMetrics</span><span class="o">.</span><span class="n">DiskUsageMonitor</span><span class="p">,</span>
+        <span class="s2">&quot;NetworkUsageMonitor&quot;</span><span class="p">:</span><span class="n">prometheus</span><span class="o">.</span><span class="n">systemMetrics</span><span class="o">.</span><span class="n">NetworkUsageMonitor</span>
+    <span class="p">}</span>
+    <span class="c1"># base_directory = &#39;prometheus&#39;</span>
+    <span class="c1"># base_module = &#39;prometheus&#39;</span>
 
-    <span class="c1"># Find all modules in the base directory</span>
-    <span class="n">modules</span> <span class="o">=</span> <span class="n">find_modules_in_directory</span><span class="p">(</span><span class="n">base_directory</span><span class="p">)</span>
-    <span class="n">metrics_classes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># # Find all modules in the base directory</span>
+    <span class="c1"># modules = find_modules_in_directory(base_directory)</span>
+    <span class="c1"># metrics_classes = {}</span>
 
-    <span class="c1"># Iterate over modules to find and filter classes</span>
-    <span class="k">for</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">module_path</span> <span class="ow">in</span> <span class="n">modules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">classes</span> <span class="o">=</span> <span class="n">find_classes_in_module</span><span class="p">(</span><span class="n">module_path</span><span class="p">)</span>
-        <span class="n">filtered_classes</span> <span class="o">=</span> <span class="n">filter_metric_classes</span><span class="p">(</span><span class="n">classes</span><span class="p">,</span> <span class="n">base_module</span><span class="p">)</span>
-        <span class="n">metrics_classes</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">filtered_classes</span><span class="p">)</span>
+    <span class="c1"># # Iterate over modules to find and filter classes</span>
+    <span class="c1"># for module_name, module_path in modules.items():</span>
+    <span class="c1">#     classes = find_classes_in_module(module_path)</span>
+    <span class="c1">#     filtered_classes = filter_metric_classes(classes, base_module)</span>
+    <span class="c1">#     metrics_classes.update(filtered_classes)</span>
 
     <span class="k">return</span> <span class="n">metrics_classes</span>
 </code></pre></div>
