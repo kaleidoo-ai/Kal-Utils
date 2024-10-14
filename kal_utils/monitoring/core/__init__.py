@@ -1,5 +1,5 @@
 from .config_managers import ConfigManager, EnvConfigManager, AWSConfigManager
-from config_metrics import configure_monitor
+from .config_metrics import configure_monitor
 from .metrics import get_enabled_metrics, get_metrics_classes
 
 
