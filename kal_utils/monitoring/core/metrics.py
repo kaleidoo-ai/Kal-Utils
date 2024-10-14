@@ -39,18 +39,29 @@ def get_metrics_classes() -> Dict[str, Type]:
     """
     Dynamically load and return a dictionary of available metrics classes.
     """
-    base_directory = 'prometheus'
-    base_module = 'prometheus'
+    from .. import prometheus
+    metrics_classes = {
+        "LocationRequestCounter":prometheus.locationRequestCounter.LocationRequestCounter,
+        "RequestCounter":prometheus.requestMetrics.RequestCounter,
+        "RequestHist":prometheus.requestMetrics.RequestHist,
+        "ServerErrorMetrics":prometheus.requestMetrics.ServerErrorMetrics,
+        "CpuUsageMonitor":prometheus.systemMetrics.CpuUsageMonitor,
+        "MemoryUsageMonitor":prometheus.systemMetrics.MemoryUsageMonitor,
+        "DiskUsageMonitor":prometheus.systemMetrics.DiskUsageMonitor,
+        "NetworkUsageMonitor":prometheus.systemMetrics.NetworkUsageMonitor
+    }
+    # base_directory = 'prometheus'
+    # base_module = 'prometheus'
 
-    # Find all modules in the base directory
-    modules = find_modules_in_directory(base_directory)
-    metrics_classes = {}
+    # # Find all modules in the base directory
+    # modules = find_modules_in_directory(base_directory)
+    # metrics_classes = {}
 
-    # Iterate over modules to find and filter classes
-    for module_name, module_path in modules.items():
-        classes = find_classes_in_module(module_path)
-        filtered_classes = filter_metric_classes(classes, base_module)
-        metrics_classes.update(filtered_classes)
+    # # Iterate over modules to find and filter classes
+    # for module_name, module_path in modules.items():
+    #     classes = find_classes_in_module(module_path)
+    #     filtered_classes = filter_metric_classes(classes, base_module)
+    #     metrics_classes.update(filtered_classes)
 
     return metrics_classes
 
