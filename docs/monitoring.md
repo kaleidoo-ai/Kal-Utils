@@ -52,7 +52,34 @@ This module provides interfaces and prebuilt monitoring configuration and integr
 
 ::: kal_utils.monitoring.prometheus.systemMetrics.NetworkUsageMonitor
 
+###TracingConfig
+
+::: kal_utils.monitoring.tempo.tracing_manager.TracingConfig
+
+###OTLPTracingConfig
+
+::: kal_utils.monitoring.tempo.tracing_manager.OTLPTracingConfig
+
+###JaegerTracingConfig
+
+::: kal_utils.monitoring.tempo.tracing_manager.JaegerTracingConfig
+
 ## Functions
+###span_with_attributes
+
+::: kal_utils.monitoring.tempo.context_manager.span_with_attributes
+
+###span_with_event
+
+::: kal_utils.monitoring.tempo.context_manager.span_with_event
+
+###add_span_attributes
+
+::: kal_utils.monitoring.tempo.decorator_manager.add_span_attributes
+
+###add_span_event
+
+::: kal_utils.monitoring.tempo.decorator_manager.add_span_event
 
 ### configure_monitor
 
