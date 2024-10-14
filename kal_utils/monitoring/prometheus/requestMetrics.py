@@ -4,7 +4,7 @@ import time
 from fastapi import Request
 from prometheus_client import Counter, Histogram, REGISTRY
 
-from prometheus.prometheus_base import PrometheusMetricsDecorator
+from .prometheus_base import PrometheusMetricsDecorator
 
 
 class RequestCounter(PrometheusMetricsDecorator):

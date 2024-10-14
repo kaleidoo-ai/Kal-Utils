@@ -9,7 +9,7 @@ from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, Summary, His
 from fastapi.security import HTTPBasicCredentials
 from fastapi import Depends
 
-from utils.basic_authentication import authenticate
+from ..utils.basic_authentication import authenticate
 
 
 # Available Prometheus metrics types:
@@ -114,7 +114,7 @@ class PrometheusMetricsDecorator(ABC):
         @app.get("/metrics")
         async def metrics(credentials: HTTPBasicCredentials = Depends(authenticate)):
             return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
-        
+
 
     def instrument(self) -> Callable:
         """
@@ -168,7 +168,7 @@ class PrometheusMetricsDecorator(ABC):
             NotImplementedError: If not implemented in the subclass.
         """
         raise NotImplementedError("after_request() must be implemented in the subclass")
-    
+
     @abstractmethod
     def update_metrics(self, request: Request, response: Any):
         """

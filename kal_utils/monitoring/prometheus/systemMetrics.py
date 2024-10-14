@@ -4,7 +4,7 @@ from typing import Any
 from prometheus_client import Gauge, REGISTRY
 from fastapi import Request
 
-from prometheus.prometheus_base import PrometheusMetricsDecorator
+from .prometheus_base import PrometheusMetricsDecorator
 
 class CpuUsageMonitor(PrometheusMetricsDecorator):
     """

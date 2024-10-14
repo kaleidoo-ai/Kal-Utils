@@ -4,13 +4,13 @@ import random
 from prometheus_client import Counter, REGISTRY
 from fastapi import Request
 
-from prometheus.prometheus_base import PrometheusMetricsDecorator
+from .prometheus_base import PrometheusMetricsDecorator
 
 
 class LocationRequestCounter(PrometheusMetricsDecorator):
     """
     A class to monitor HTTP request metrics based on request locations using Prometheus.
-    
+
     Attributes:
         location_requests (Counter): A Prometheus counter that tracks the total number of requests
             received from different locations, labeled by latitude and longitude.
@@ -55,10 +55,10 @@ class LocationRequestCounter(PrometheusMetricsDecorator):
         """
         # Extract client IP address
         client_ip = request.client.host
-        
+
         # Get location data
         latitude, longitude = get_location_from_ip(client_ip)
-        
+
         # Increment the location-based counter
         self.location_requests.labels(latitude=str(latitude), longitude=str(longitude)).inc()
 

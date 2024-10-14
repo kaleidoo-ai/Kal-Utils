@@ -3,8 +3,8 @@ from urllib.request import Request
 
 from fastapi import FastAPI
 
-from prometheus.prometheus_base import PrometheusMetricsDecorator
-from core.metrics import get_metrics_classes, get_enabled_metrics
+from .prometheus_base import PrometheusMetricsDecorator
+from ..core.metrics import get_metrics_classes, get_enabled_metrics
 
 
 def create_unified_metrics_class(app: FastAPI) -> Type[PrometheusMetricsDecorator]:

@@ -5,7 +5,7 @@ from tempo.tracing_manager import (
     OTLPTracingConfig,
     JaegerTracingConfig,
 )
-from core.config_managers import EnvConfigManager
+from .config_managers import EnvConfigManager
 
 
 def configure_tracing(app: FastAPI):
@@ -61,7 +61,7 @@ def configure_tracing(app: FastAPI):
             #         route_name = route.path
             #         # route_name = route.endpoint.__name__
             #         break
-            
+
             if not route_name:
                 route_name = "unknown_function"
 
@@ -73,7 +73,7 @@ def configure_tracing(app: FastAPI):
                 span.set_attribute("http.url", str(request.url))
                 response = await call_next(request)
             return response
-        
+
 def configure_tracing1():
     """
     Configures tracing based on the environment variables.
@@ -113,4 +113,3 @@ def configure_tracing1():
 
     # Configure tracing
     tracing_config.configure_tracing()
-    

@@ -8,3 +8,8 @@ pydantic
 minio==7.2.8
 tqdm
 boto3
+tempo
+opentelemetry-api
+botocore
+prometheus_client
+psutil
