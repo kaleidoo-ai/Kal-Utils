@@ -1,3 +1,3 @@
-from . import core, prometheus, utils
+from . import core, prometheus, utils,tempo
 
-__all__ = ['core', 'prometheus', 'utils']
+__all__ = ['core', 'prometheus', 'utils','tempo']
