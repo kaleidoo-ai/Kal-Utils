@@ -91,3 +91,4 @@ nav:
           - sorts module: sorts.md
           - helper module: helper.md
           - storage module: storage.md
+          - monitoring module: monitoring.md
