@@ -19,3 +19,4 @@ prometheus_client
 psutil
 aio-pika
 aiokafka
+loguru

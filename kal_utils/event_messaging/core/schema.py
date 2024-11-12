@@ -2,8 +2,8 @@ from enum import Enum
 import pydantic
 from pydantic import BaseModel, field_validator, Field, Extra
 from typing import Optional, List, Dict, Any
-from kal_utils.mongodb import ValidObjectId
-from core.constants import ErrorMessages, TranscriptionConstants
+from ...mongodb import ValidObjectId
+from ...event_messaging.core.constants import ErrorMessages, TranscriptionConstants
 
 
     

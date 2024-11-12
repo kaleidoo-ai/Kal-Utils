@@ -2,18 +2,10 @@ import os
 import json
 from google.cloud import pubsub_v1
 from google.auth import jwt
-from .base import KalSenseBaseProducer
+from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
 
-
-    
-import os
-import json
-from google.cloud import pubsub_v1
-from google.auth import jwt
-from base import KalSenseBaseProducer
-from core.settings import settings
-# from core.logging import logger
-from loguru import logger
 
 class KalSensePubSubProducer(KalSenseBaseProducer):
     __producer_cls = pubsub_v1.PublisherClient

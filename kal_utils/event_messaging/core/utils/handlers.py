@@ -1,5 +1,5 @@
 import sys
-from core.logging import logger
+from kal_utils.event_messaging.core.logging import logger
 import traceback
 import asyncio
 import psutil

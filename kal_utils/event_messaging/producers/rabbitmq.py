@@ -3,12 +3,12 @@ import json
 import pika
 from dotenv import load_dotenv
 
-from .base import KalSenseBaseProducer
-from core.settings import settings
-from core.logging import logger
+from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
 # from loguru import logger
 
-load_dotenv()
+# load_dotenv()
 
 class KalSenseRabbitMQProducer(KalSenseBaseProducer):
     """

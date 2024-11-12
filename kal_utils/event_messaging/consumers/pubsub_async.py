@@ -15,7 +15,7 @@ from google.oauth2 import service_account
 
 
 # Local imports
-from .base import KalSenseBaseConsumer
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
 from core.settings import settings
 from core.schema import Message
 # For System And API Testing In Containerized Environment

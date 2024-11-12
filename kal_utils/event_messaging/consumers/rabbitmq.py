@@ -2,9 +2,9 @@ import os
 import json
 import pika
 
-from .base import KalSenseBaseConsumer
-from core.logging import logger
-from core.settings import settings
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+from kal_utils.event_messaging.core.logging import logger
+from kal_utils.event_messaging.core.settings import settings
 # from loguru import logger
 
 

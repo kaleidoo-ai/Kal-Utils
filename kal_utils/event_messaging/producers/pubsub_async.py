@@ -9,11 +9,11 @@ from google.oauth2 import service_account
 from google.api_core.exceptions import NotFound
 
 
-from .base import KalSenseBaseProducer
-from core.settings import settings
-from core.logging import logger
-from core.schema import Message
+from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.schema import Message
 
+from kal_utils.event_messaging.core.logging import logger
 # NOTE: Uncomment the next line and comment the previous line for single file testing
 # from loguru import logger
 

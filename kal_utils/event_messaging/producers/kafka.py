@@ -1,4 +1,4 @@
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 import json
 
@@ -13,17 +13,16 @@ from kafka.future import Future
 from kafka.errors import KafkaError
 import kafka.future
 
-from core.settings import settings
-from core.logging import logger
-# from loguru import logger
-
 # NOTE: REQUIRES the kafka environment variables (Producer, Producer connection string)
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 # Import
-from .base import KalSenseBaseProducer
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
+from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
 
+# Uncomment next line to test env vars
 # print (os.getenv('KAFKA_BOOTSTRAP_SERVERS_CONNECTION'))
 
 
