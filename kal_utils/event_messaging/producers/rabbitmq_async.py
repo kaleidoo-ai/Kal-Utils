@@ -4,10 +4,10 @@ import time
 from typing import Any
 import json
 
-from .base import KalSenseBaseProducer
-from core.settings import settings
+from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
+from kal_utils.event_messaging.core.settings import settings
 # When deployed into a larger API uncomment the line below
-from core.logging import logger
+from kal_utils.event_messaging.core.logging import logger
 # When deployed into a larger API comment the line below
 # from loguru import logger
 

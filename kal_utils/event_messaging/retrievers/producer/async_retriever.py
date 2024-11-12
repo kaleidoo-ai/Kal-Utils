@@ -3,15 +3,15 @@ import os
 import json
 
 # For Unittest
-import unittest
-from unittest.mock import patch, MagicMock
+# import unittest
+# from unittest.mock import patch, MagicMock
 
 # Local Module imports
-from .base_producer_retriever import BaseProducerRetriever
+from kal_utils.event_messaging.retrievers.producer.base_producer_retriever import BaseProducerRetriever
 
 # load environment variables
-from core.settings import settings
-from core.logging import logger
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
 
 # SYS_EVENT_MODE = settings.SYS_EVENT_MODE
 

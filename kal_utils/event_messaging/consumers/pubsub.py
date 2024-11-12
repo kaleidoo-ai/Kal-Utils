@@ -4,10 +4,10 @@ import json
 from google.cloud import pubsub_v1
 from google.auth import jwt
 
-from base import KalSenseBaseConsumer
-from core.logging import logger
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+from kal_utils.event_messaging.core.logging import logger
 # from loguru import logger
-from core.settings import settings
+from kal_utils.event_messaging.core.settings import settings
 
 
 class KalSensePubSubConsumer(KalSenseBaseConsumer):

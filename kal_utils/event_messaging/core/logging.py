@@ -2,9 +2,6 @@ import sys
 from loguru import logger
 import logging
 
-# Remove any pre-configured handlers
-logger.remove()
-
 # Directory and file name for the logs
 log_directory = "/app/logs"
 log_file = f"{log_directory}/app.log"

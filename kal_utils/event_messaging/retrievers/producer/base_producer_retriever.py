@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 
 
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 class BaseProducerRetriever(ABC):
     def __init__(self):

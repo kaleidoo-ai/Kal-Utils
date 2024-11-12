@@ -10,10 +10,10 @@ from aiokafka import AIOKafkaConsumer
 # from loguru import logger
 
 # KalSense imports
-from .base import KalSenseBaseConsumer
-from core.settings import settings
-from core.logging import logger
-from core.schema import Message
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
+from kal_utils.event_messaging.core.schema import Message
 
 
 

@@ -1,18 +1,14 @@
 # Standard Library Imports
 import os
 import json
-# import asyncio
-
-# For Unittest
-import unittest
-from unittest.mock import patch, MagicMock
+import asyncio
 
 # Local Module imports
-from .base_consumer_retriever import BaseConsumerRetriever
+from kal_utils.event_messaging.retrievers.consumer.base_consumer_retriever import BaseConsumerRetriever
 
 # load environment variables
-from core.settings import settings
-from core.logging import logger
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.logging import logger
 # SYS_EVENT_MODE = settings.SYS_EVENT_MODE
 
 class AsyncConsumerRetriever(BaseConsumerRetriever):

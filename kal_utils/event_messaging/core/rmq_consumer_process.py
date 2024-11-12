@@ -1,7 +1,7 @@
 import asyncio
 import multiprocessing
-from retrievers.consumer.async_retriever import ConsumerRetriever
-from core.logging import logger
+from event_messaging.retrievers.consumer.async_retriever import AsyncConsumerRetriever
+from event_messaging.core.logging import logger
 
 class RMQConsumerProcess(multiprocessing.Process):
     def __init__(
@@ -14,10 +14,11 @@ class RMQConsumerProcess(multiprocessing.Process):
         super().__init__(*args, **kwargs)
         self.topic = topic
         self.queue = queue
-        self.consumer = ConsumerRetriever().get_consumer(self.topic)
+        self.consumer = AsyncConsumerRetriever().get_consumer(self.topic)
 
     async def process_message(self, msg):
-        pass
+        # Callback Method for Future processing
+        return msg
 
     async def consume_messages(self):
         # Connect to RabbitMQ

@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 
 # For unittests
 import unittest
 
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 class BaseConsumerRetriever(ABC):
     def __init__(self):

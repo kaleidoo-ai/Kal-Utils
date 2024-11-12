@@ -1,17 +1,13 @@
 # Standard Library Imports
 import os
 import json
-# import asyncio
-
-# For Unittest
-import unittest
-from unittest.mock import patch, MagicMock
+import asyncio
 
 # Local Module imports
-from .base_consumer_retriever import BaseConsumerRetriever
+from kal_utils.event_messaging.retrievers.consumer.base_consumer_retriever import BaseConsumerRetriever
 
 # load environment variables
-from core.settings import settings
+from kal_utils.event_messaging.core.settings import settings
 
 SYS_EVENT_MODE = settings.SYS_EVENT_MODE
 
@@ -58,12 +54,14 @@ class ConsumerRetriever(BaseConsumerRetriever):
         """
         
                 
-        return self.__consumer_cls(topic=topic, consumer_group=consumer_group)
+        return self.__consumer_cls(topic=topic) #, consumer_group=consumer_group)
 
 
 # ------------------------------------------- UNIT TEST -------------------------------------------
 
 # Unittest
+import unittest
+from unittest.mock import patch, MagicMock
 class TestConsumerRetriever(unittest.TestCase):
     @patch('builtins.SYS_MESSAGING_QUEUE_MODE', 'kafka')
     def test_init_kafka(self):

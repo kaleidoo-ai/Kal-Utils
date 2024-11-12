@@ -6,13 +6,13 @@ from aio_pika.abc import AbstractIncomingMessage
 import time
 from typing import Any, AsyncIterator
 
-from .base import KalSenseBaseConsumer
-from core.settings import settings
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+from kal_utils.event_messaging.core.settings import settings
 # When deployed into a larger API uncomment the line below
-from core.logging import logger
+from kal_utils.event_messaging.core.logging import logger
 # When deployed into a larger API comment the line below
 #from loguru import logger
-from core.schema import Message
+from kal_utils.event_messaging.core.schema import Message
 
 
 class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):

@@ -12,17 +12,17 @@ from kafka import KafkaConsumer
 
 # import logger
 # Comment in standalone testing
-from core.logging import logger
+from kal_utils.event_messaging.core.logging import logger
 # Uncomment in standalone testing
 # from loguru import logger
 
 # NOTE: REQUIRES the kafka environment variables (consumer, consumer connection string)
 # load environment variables
-load_dotenv()
+# load_dotenv()
 
 # Import
-from .base import KalSenseBaseConsumer
-from core.settings import settings
+from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+from kal_utils.event_messaging.core.settings import settings
 
 
 

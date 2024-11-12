@@ -7,7 +7,12 @@ from pydantic import AnyHttpUrl, Field, field_validator
 from pydantic_settings import BaseSettings
 # from core.utils.setup import setup_settings
 
-dotenv.load_dotenv()
+# WARNING: The following line should only be un-commented if you are in local testing...
+#          It is up to the DevOps team in your company to make sure that these are CONSISTENT
+#          Across Services (IP, Or DNS name) and that every env var is addressed.
+#          It needs to be stressed that this is still an EXPERIMENTAL feature.
+#          !!!! Refinement of necessary or un-necessary env vars can occur !!!!
+# dotenv.load_dotenv()
 
 # print (os.environ)
 
