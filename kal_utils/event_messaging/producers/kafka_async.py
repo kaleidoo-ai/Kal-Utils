@@ -61,7 +61,7 @@ class KalSenseAioKafkaProducer(KalSenseBaseProducer):
             self._sync_close()
 
     def _sync_close(self):
-        logger.info(f"Deleteing producer")
+        logger.info(f"Deleting producer")
         try:
             asyncio.get_event_loop_policy().get_event_loop().create_task(self.close)
         except Exception as e:

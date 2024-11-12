@@ -17,7 +17,7 @@ class KalSenseBaseProducer(ABC):
     
     @topic.setter
     def topic(self, value: str):
-        raise ValueError("Topic cannot be changed once set, to change topics recieve a new instance from the retriever class")
+        raise ValueError("Topic cannot be changed once set, to change topics receive a new instance from the retriever class")
     
     @topic.deleter
     def topic(self):
@@ -29,7 +29,7 @@ class KalSenseBaseProducer(ABC):
     
     @producer_group.setter
     def producer_group(self, value: str):
-        raise ValueError("Producer group cannot be changed once set, to change producer_group recieve a new instance from the retriever class")
+        raise ValueError("Producer group cannot be changed once set, to change producer_group receive a new instance from the retriever class")
     
     @producer_group.deleter
     def producer_group(self):
@@ -41,7 +41,7 @@ class KalSenseBaseProducer(ABC):
     
     @producer.setter
     def producer(self, value):
-        raise ValueError("Producer cannot be changed once set, to change producer recieve a new instance from the retriever class")
+        raise ValueError("Producer cannot be changed once set, to change producer receive a new instance from the retriever class")
     
     @producer.deleter
     def producer(self):

@@ -64,7 +64,7 @@ class KalSenseKafkaProducer(KalSenseBaseProducer):
                     del self
                     return True
                 except Exception as e:
-                    logger.warning(f"An Error Occured while deleting KalSenseKafkaProducer instance: {e}")
+                    logger.warning(f"An Error Occurred while deleting KalSenseKafkaProducer instance: {e}")
                     return False
                 
 

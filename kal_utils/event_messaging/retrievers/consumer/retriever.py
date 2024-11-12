@@ -43,7 +43,7 @@ class ConsumerRetriever(BaseConsumerRetriever):
     
     @property
     def consumer_cls(self):
-        raise ValueError("Cannot access self.consumer_cls attribute. to recieve a consumer instance, call obj.get_consumer() instead")
+        raise ValueError("Cannot access self.consumer_cls attribute. to receive a consumer instance, call obj.get_consumer() instead")
 
 
     def get_consumer(self, topic:str) -> object:

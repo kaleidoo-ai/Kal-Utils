@@ -13,7 +13,7 @@ class KalSenseBaseConsumer(ABC):
     
     @topic.setter
     def topic(self, value: str):
-        raise ValueError("Topic cannot be changed once set, to change topics recieve a new instance from the retriever class")
+        raise ValueError("Topic cannot be changed once set, to change topics receive a new instance from the retriever class")
     
     @topic.deleter
     def topic(self):
@@ -25,7 +25,7 @@ class KalSenseBaseConsumer(ABC):
     
     @consumer_group.setter
     def consumer_group(self, value: str):
-        raise ValueError("Consumer group cannot be changed once set, to change consumer_group recieve a new instance from the retriever class")
+        raise ValueError("Consumer group cannot be changed once set, to change consumer_group receive a new instance from the retriever class")
     
     @consumer_group.deleter
     def consumer_group(self):
@@ -37,7 +37,7 @@ class KalSenseBaseConsumer(ABC):
     
     @consumer.setter
     def consumer(self, value):
-        raise ValueError("Consumer cannot be changed once set, to change consumer recieve a new instance from the retriever class")
+        raise ValueError("Consumer cannot be changed once set, to change consumer receive a new instance from the retriever class")
     
     @consumer.deleter
     def consumer(self):

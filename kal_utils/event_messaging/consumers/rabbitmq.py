@@ -44,7 +44,7 @@ class KalSenseRabbitMQConsumer(KalSenseBaseConsumer):
                 yield decoded_message
                 self.__channel.basic_ack(method_frame.delivery_tag)
             except Exception as e:
-                logger.error(f"Error while consuming asyncronously from RabbitMQ {e}")
+                logger.error(f"Error while consuming asynchronously from RabbitMQ {e}")
                 self.__channel.basic_nack(method_frame.delivery_tag)
                 continue
 

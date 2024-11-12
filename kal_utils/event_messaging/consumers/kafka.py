@@ -59,7 +59,7 @@ class KalSenseKafkaConsumer(KalSenseBaseConsumer):
                     logger.info("Consumer deleted")
                     return True
                 except Exception as e:
-                    logger.error(f"An Error Occured While Deleting {__name__}.KalSenseKafkaConsumer.__del__: {e}")
+                    logger.error(f"An Error Occurred While Deleting {__name__}.KalSenseKafkaConsumer.__del__: {e}")
                     return False
                 
 

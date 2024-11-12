@@ -70,7 +70,7 @@ class KalSenseAioKafkaConsumer(KalSenseBaseConsumer):
     def __del__(self):
         """Closes the consumer.
         NOTE: Synchronous"""
-        logger.info(f"Deleteing consumer")
+        logger.info(f"Deleting consumer")
         if self.__consumer:
             try:
                 asyncio.get_event_loop().create_task(self._close_consumer())
