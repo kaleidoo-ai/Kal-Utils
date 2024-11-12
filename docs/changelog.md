@@ -1,13 +1,15 @@
 # Changelog
 
-
-## v2.0.8.5 - Date
-
+## v2.0.8.6 - Date
 
 **Improvement**:
 
--   TBD
+- TBD
 
 **New Features**:
 
--   TBD
+- Fully Featured, Tool Agnostic Event Messaging, Currently Includes the following tool support:
+  - RabbitMQ (Synchronous & Asynchronous Implementation)
+  - Kafka (Synchronous & Asynchronous Implementation)
+  - PubSub (Synchronous & Asynchronous Implementation)
+- All Implementations are OOP based (Abstract Polymorphic Implementation)
