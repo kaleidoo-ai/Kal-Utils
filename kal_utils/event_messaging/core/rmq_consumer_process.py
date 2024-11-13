@@ -1,7 +1,7 @@
 import asyncio
 import multiprocessing
-from event_messaging.retrievers.consumer.async_retriever import AsyncConsumerRetriever
-from event_messaging.core.logging import logger
+from kal_utils.event_messaging.retrievers.consumer.async_retriever import AsyncConsumerRetriever
+from kal_utils.event_messaging.core.logging import logger
 
 class RMQConsumerProcess(multiprocessing.Process):
     def __init__(

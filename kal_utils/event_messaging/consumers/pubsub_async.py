@@ -16,10 +16,10 @@ from google.oauth2 import service_account
 
 # Local imports
 from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
-from core.settings import settings
-from core.schema import Message
+from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core.schema import Message
 # For System And API Testing In Containerized Environment
-from core.logging import logger
+from kal_utils.event_messaging.core.logging import logger
 # For Local Testing, single file execution, etc.
 # from loguru import logger
 
