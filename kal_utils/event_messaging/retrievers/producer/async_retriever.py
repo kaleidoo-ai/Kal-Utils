@@ -26,14 +26,14 @@ class AsyncProducerRetriever(BaseProducerRetriever):
         super().__init__()
         self.__mode = settings.SYS_EVENT_MODE
         if self.mode == "kafka":
-            from producers.kafka_async import KalSenseAioKafkaProducer
+            from kal_utils.event_messaging.producers.kafka_async import KalSenseAioKafkaProducer
             logger.debug("start init kafka:ProducerRetriever")
             self.__producer_cls = KalSenseAioKafkaProducer
         elif self.mode == "rabbitmq":
-            from producers.rabbitmq_async import KalSenseAioRabbitMQProducer
+            from kal_utils.event_messaging.producers.rabbitmq_async import KalSenseAioRabbitMQProducer
             self.__producer_cls = KalSenseAioRabbitMQProducer
         elif self.mode == "pubsub":
-            from producers.pubsub_async import KalSenseAioPubSubProducer
+            from kal_utils.event_messaging.producers.pubsub_async import KalSenseAioPubSubProducer
             self.__producer_cls = KalSenseAioPubSubProducer
         else:
             self.__producer_cls = None
