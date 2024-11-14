@@ -21,13 +21,13 @@ class ConsumerRetriever(BaseConsumerRetriever):
         super().__init__()
         self.__mode = SYS_EVENT_MODE
         if self.mode == "kafka":
-            from consumers.kafka import KalSenseKafkaConsumer
+            from kal_utils.event_messaging.consumers.kafka import KalSenseKafkaConsumer
             self.__consumer_cls = KalSenseKafkaConsumer
         elif self.mode == "rabbitmq":
-            from consumers.rabbitmq import KalSenseRabbitMQConsumer
+            from kal_utils.event_messaging.consumers.rabbitmq import KalSenseRabbitMQConsumer
             self.__consumer_cls = KalSenseRabbitMQConsumer
         elif self.mode == "pubsub":
-            from consumers.pubsub import KalSensePubSubConsumer
+            from kal_utils.event_messaging.consumers.pubsub import KalSensePubSubConsumer
             self.__consumer_cls = KalSensePubSubConsumer
         else:
             self.__consumer_cls = None
