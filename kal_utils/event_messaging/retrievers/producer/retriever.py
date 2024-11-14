@@ -24,13 +24,13 @@ class ProducerRetriever(BaseProducerRetriever):
         super().__init__()
         self.__mode = SYS_EVENT_MODE
         if self.mode == "kafka":
-            from producers.kafka import KalSenseKafkaProducer
+            from kal_utils.event_messaging.producers.kafka import KalSenseKafkaProducer
             self.__producer_cls = KalSenseKafkaProducer
         elif self.mode == "rabbitmq":
-            from producers.rabbitmq import KalSenseRabbitMQProducer
+            from kal_utils.event_messaging.producers.rabbitmq import KalSenseRabbitMQProducer
             self.__producer_cls = KalSenseRabbitMQProducer
         elif self.mode == "pubsub":
-            from producers.pubsub import KalSensePubSubProducer
+            from kal_utils.event_messaging.producers.pubsub import KalSensePubSubProducer
             self.__producer_cls = KalSensePubSubProducer
         else:
             self.__producer_cls = None

@@ -22,13 +22,13 @@ class AsyncConsumerRetriever(BaseConsumerRetriever):
         super().__init__()
         self.__mode = settings.SYS_EVENT_MODE
         if self.mode == "kafka":
-            from consumers.kafka_async import KalSenseAioKafkaConsumer
+            from kal_utils.event_messaging.consumers.kafka_async import KalSenseAioKafkaConsumer
             self.__consumer_cls = KalSenseAioKafkaConsumer
         elif self.mode == "rabbitmq":
-            from consumers.rabbitmq_async import KalSenseAioRabbitMQConsumer
+            from kal_utils.event_messaging.consumers.rabbitmq_async import KalSenseAioRabbitMQConsumer
             self.__consumer_cls = KalSenseAioRabbitMQConsumer
         elif self.mode == "pubsub":
-            from consumers.pubsub_async import KalSenseAioPubSubConsumer
+            from kal_utils.event_messaging.consumers.pubsub_async import KalSenseAioPubSubConsumer
             self.__consumer_cls = KalSenseAioPubSubConsumer
         else:
             self.__consumer_cls = None
