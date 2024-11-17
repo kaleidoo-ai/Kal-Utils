@@ -31,6 +31,9 @@ class MinIOStorage(BaseStorage):
             )
             self.url = f"http://{minio_creds['url']}"
         else:
+            logger.info("credentials is None, trying to initialize storage with environment variables")
+            if not (os.environ.get('MINIO_ENDPOINT') and os.environ.get('MINIO_ACCESS_KEY') and os.environ.get('MINIO_SECRET_KEY')):
+                logger.error("Missing required environment variables for MinIO")
             self.client = Minio(
                 os.environ.get('MINIO_ENDPOINT'),
                 access_key=os.environ.get('MINIO_ACCESS_KEY'),

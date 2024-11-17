@@ -26,6 +26,7 @@ class GCSStorage(BaseStorage):
             credentials = service_account.Credentials.from_service_account_info(service_account_info)
             self.storage_client = storage.Client(credentials=credentials)
         else:
+            logger.info("credentials is None, trying to initialize storage without credentials")
             self.storage_client = storage.Client()
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
