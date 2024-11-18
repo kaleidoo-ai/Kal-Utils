@@ -1,6 +1,8 @@
 import sys
-from loguru import logger
+# from loguru import logger
 import logging
+
+logger = logging.getLogger("Queue Messaging System")
 
 # Directory and file name for the logs
 log_directory = "/app/logs"
@@ -11,15 +13,15 @@ log_format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</le
 
 
 # Configure loguru logger
-logger.remove()  # Remove default handler
-logger.add(sys.stderr, 
-           format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-           level="DEBUG")
-logger.add("/app/logs/fastapi.log", 
-           format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-           level="DEBUG",
-           rotation="10 MB",
-           retention="5 days")
+# logger.remove()  # Remove default handler
+# logger.add(sys.stderr, 
+#            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+#            level="DEBUG")
+# logger.add("/app/logs/fastapi.log", 
+#            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+#            level="DEBUG",
+#            rotation="10 MB",
+#            retention="5 days")
 
 # Create a custom logging config for uvicorn
 class InterceptHandler(logging.Handler):
