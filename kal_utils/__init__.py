@@ -3,7 +3,7 @@
 from . import requests, logger, handle_response, mongodb, time_zone, helper, monitoring
 __author__ = """Bar Lander"""
 __email__ = "barh@kaleidoo.ai"
-__version__ = "2.0.8.11"
+__version__ = "2.0.8.12"
 
 
 __all__ = ['requests', 'logger', 'handle_response', 'mongodb', 'time_zone', 'helper', 'storage', 'monitoring']
