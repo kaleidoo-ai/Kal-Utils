@@ -32,7 +32,7 @@ def return_response(res=None, validation_errors=None ,error=None, data=False):
         if response_status == "success":
             res["status_code"] = status.HTTP_200_OK
             return res
-        if data:
+        if data and "data" not in res:
             res["status_code"] = status.HTTP_404_NOT_FOUND
             return res
         res["status_code"] = status.HTTP_400_BAD_REQUEST
