@@ -23,7 +23,7 @@ def parse_json_request(model):
 
 def return_response(res=None, validation_errors=None ,error=None, data=False):
     if validation_errors:
-        return {"message": ", ".join(validation_errors), "status_code": status.HTTP_400_BAD_REQUEST}
+        return {"message": ", ".join(validation_errors), "status_code": status.HTTP_422_UNPROCESSABLE_ENTITY}
     if error:
         return {"message": f"Internal Server Error: {error}", "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR}
     if res:
