@@ -1,6 +1,6 @@
 [project]
 name = "kal-utils"
-version = "2.0.8.15"
+version = "2.0.8.16"
 dynamic = [
     "dependencies",
 ]
@@ -52,7 +52,7 @@ universal = true
 
 
 [tool.bumpversion]
-current_version = "2.0.8.15"
+current_version = "2.0.8.16"
 commit = true
 tag = true
 
