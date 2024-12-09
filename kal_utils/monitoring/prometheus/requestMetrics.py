@@ -40,7 +40,7 @@ class RequestCounter(PrometheusMetricsDecorator):
             self.total_requests = Counter(
                 'total_requests',
                 'Total number of requests received by status code',
-                ['status_code']
+                ['status_code', 'method', 'route']
             )
         else:
             self.total_requests = REGISTRY._names_to_collectors['total_requests']
@@ -65,7 +65,8 @@ class RequestCounter(PrometheusMetricsDecorator):
         """
         # Determine the status code and increment the corresponding counter
         status_code = response.status_code
-        self.total_requests.labels(status_code=str(status_code)).inc()
+        route_name = request.url.path
+        self.total_requests.labels(status_code=str(status_code), method=request.method, route=route_name).inc()
 
     def update_metrics(self, request: Request, response: Any):
         pass
@@ -99,7 +100,8 @@ class RequestHist(PrometheusMetricsDecorator):
         """
         if 'request_latency_seconds' not in REGISTRY._names_to_collectors:
             self.request_latency = Histogram('request_latency_seconds',
-                                             'Request latency in seconds')
+                                             'Request latency in seconds',
+                                             ['status_code', 'method', 'route'])
         else:
             self.request_latency = REGISTRY._names_to_collectors['request_latency_seconds']
 
@@ -128,8 +130,10 @@ class RequestHist(PrometheusMetricsDecorator):
         """
 
         # Measure and record the request latency
+        status_code = response.status_code
+        route_name = request.url.path
         latency = time.time() - self.request_start_time
-        self.request_latency.observe(latency)
+        self.request_latency.labels(status_code=str(status_code), method=request.method, route=route_name).observe(latency)
 
     def update_metrics(self, request: Request, response: Any):
         pass
