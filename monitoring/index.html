@@ -546,11 +546,11 @@
   
   
     <li class="md-nav__item">
-      <a href="../logger/" class="md-nav__link">
+      <a href="../logging/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
-    logger module
+    logging module
   </span>
   
 
@@ -9530,8 +9530,9 @@ combined functionality of all enabled metrics classes.</p></td>
         <details class="quote">
           <summary>Source code in <code>kal_utils/monitoring/utils/basic_authentication.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">authenticate</span><span class="p">(</span><span class="n">credentials</span><span class="p">:</span> <span class="n">HTTPBasicCredentials</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">security</span><span class="p">)):</span>
-    <span class="n">correct_username</span> <span class="o">=</span> <span class="s2">&quot;prometheus&quot;</span> <span class="c1"># TODO: Replace Hardcoded</span>
-    <span class="n">correct_password</span> <span class="o">=</span> <span class="s2">&quot;prometheus&quot;</span>
+    <span class="c1"># Retrieve credentials from environment variables</span>
+    <span class="n">correct_username</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;BASIC_AUTH_USERNAME&quot;</span><span class="p">,</span> <span class="s2">&quot;prometheus&quot;</span><span class="p">)</span>  <span class="c1"># Default fallback value if not set</span>
+    <span class="n">correct_password</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;BASIC_AUTH_PASSWORD&quot;</span><span class="p">,</span> <span class="s2">&quot;prometheus&quot;</span><span class="p">)</span>  <span class="c1"># Default fallback value if not set</span>
     <span class="k">if</span> <span class="n">credentials</span><span class="o">.</span><span class="n">username</span> <span class="o">!=</span> <span class="n">correct_username</span> <span class="ow">or</span> <span class="n">credentials</span><span class="o">.</span><span class="n">password</span> <span class="o">!=</span> <span class="n">correct_password</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">HTTPException</span><span class="p">(</span>
             <span class="n">status_code</span><span class="o">=</span><span class="n">status</span><span class="o">.</span><span class="n">HTTP_401_UNAUTHORIZED</span><span class="p">,</span>
