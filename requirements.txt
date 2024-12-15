@@ -20,3 +20,8 @@ psutil
 aio-pika
 aiokafka
 loguru
+opentelemetry.instrumentation.logging
+requests
+opentelemetry.instrumentation.httpx
+opentelemetry.instrumentation.requests
+starlette==0.38.2
