@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from opentelemetry import trace
 
 from ..tempo.tracing_manager import (
@@ -16,156 +16,59 @@ from opentelemetry.propagate import extract, inject
 from opentelemetry.trace import SpanKind, format_trace_id, Status, StatusCode
 
 
-
-def configure_tracing(app: FastAPI):
+def create_tracing_configuration(config_manager):
     """
-    Configures tracing based on the environment variables.
-
-    This function initializes the tracing configuration by loading settings from
-    environment variables. It then selects and configures the appropriate tracing
-    implementation based on the specified exporter type.
-
-    The environment variables used for configuration are:
-    - `OTEL_SERVICE_NAME`: The name of the service for tracing.
-    - `OTEL_ENDPOINT`: The endpoint URL for the tracing exporter.
-    - `OTEL_EXPORTER_TYPE`: The type of tracing exporter to use (e.g., 'otlp', 'jaeger').
-    - `OTEL_INSECURE`: Indicates if the connection is insecure (e.g., 'true', 'false').
-
-    Raises:
-        ValueError: If the specified exporter type is not supported.
-
-    The function performs the following steps:
-    1. Loads the configuration values from environment variables using `EnvConfigManager`.
-    2. Based on the `exporter_type`, it selects the corresponding tracing configuration class (`OTLPTracingConfig` or `JaegerTracingConfig`).
-    3. Calls the `configure_tracing` method on the selected tracing configuration to set up tracing.
-    """
-    # Load configuration from environment variables
-    config_manager = EnvConfigManager()
-    service_name = config_manager.get_service_name()
-    endpoint = config_manager.get_endpoint()
-    exporter_type = config_manager.get_exporter_type()
-    insecure = config_manager.get_insecure()
-
-    # Select the appropriate tracing configuration
-    if exporter_type == "otlp":
-        tracing_config = OTLPTracingConfig(service_name, endpoint, insecure)
-    elif exporter_type == "jaeger":
-        tracing_config = JaegerTracingConfig(service_name, endpoint)
-    else:
-        raise ValueError(f"Unsupported exporter type: {exporter_type}")
-
-    # Configure tracing
-    tracing_config.configure_tracing()
-    #Custom middleware to control tracing
-    @app.middleware("http")
-    async def tracing_middleware(request: Request, call_next):
-        if "/metrics" in request.url.path:
-            response = await call_next(request)
-            return response
-        else:
-            # Find the route handler function name
-            route_name = request.url.path
-            # for route in app.router.routes:
-            #     if route.path == request.url.path:
-            #         route_name = route.path
-            #         # route_name = route.endpoint.__name__
-            #         break
-
-            if not route_name:
-                route_name = "unknown_function"
-
-            # Trace the request with the function name
-            tracer = trace.get_tracer(__name__)
-            with tracer.start_as_current_span(route_name) as span:
-                # Optionally add more details to the span
-                span.set_attribute("http.method", request.method)
-                span.set_attribute("http.url", str(request.url))
-                response = await call_next(request)
-            return response
-
-def configure_tracing1():
-    """
-    Configures tracing based on the environment variables.
-
-    This function initializes the tracing configuration by loading settings from
-    environment variables. It then selects and configures the appropriate tracing
-    implementation based on the specified exporter type.
-
-    The environment variables used for configuration are:
-    - `OTEL_SERVICE_NAME`: The name of the service for tracing.
-    - `OTEL_ENDPOINT`: The endpoint URL for the tracing exporter.
-    - `OTEL_EXPORTER_TYPE`: The type of tracing exporter to use (e.g., 'otlp', 'jaeger').
-    - `OTEL_INSECURE`: Indicates if the connection is insecure (e.g., 'true', 'false').
-
-    Raises:
-        ValueError: If the specified exporter type is not supported.
-
-    The function performs the following steps:
-    1. Loads the configuration values from environment variables using `EnvConfigManager`.
-    2. Based on the `exporter_type`, it selects the corresponding tracing configuration class (`OTLPTracingConfig` or `JaegerTracingConfig`).
-    3. Calls the `configure_tracing` method on the selected tracing configuration to set up tracing.
-    """
-    # Load configuration from environment variables
-    config_manager = EnvConfigManager()
-    service_name = config_manager.get_service_name()
-    endpoint = config_manager.get_endpoint()
-    exporter_type = config_manager.get_exporter_type()
-    insecure = config_manager.get_insecure()
-
-    # Select the appropriate tracing configuration
-    if exporter_type == "otlp":
-        tracing_config = OTLPTracingConfig(service_name, endpoint, insecure)
-    elif exporter_type == "jaeger":
-        tracing_config = JaegerTracingConfig(service_name, endpoint)
-    else:
-        raise ValueError(f"Unsupported exporter type: {exporter_type}")
-
-    # Configure tracing
-    tracing_config.configure_tracing()
-
-def configure_distributed_tracing(app: FastAPI):
-    """
-    Configure distributed tracing for a FastAPI application.
-    
-    This function sets up:
-    - Trace context propagation
-    - Automatic instrumentation for HTTP clients
-    - Distributed tracing middleware
-    - Span creation for incoming requests
+    Create the appropriate tracing configuration based on environment settings.
     
     Args:
-        app (FastAPI): The FastAPI application to configure tracing for
+        config_manager (EnvConfigManager): Configuration management instance
+    
+    Returns:
+        A tracing configuration object
+    
+    Raises:
+        ValueError: If an unsupported exporter type is specified
     """
-    # Load configuration from environment variables
-    config_manager = EnvConfigManager()
+    # Retrieve tracing configuration parameters from environment
     service_name = config_manager.get_service_name()
     endpoint = config_manager.get_endpoint()
     exporter_type = config_manager.get_exporter_type()
     insecure = config_manager.get_insecure()
 
-    # Select the appropriate tracing configuration
+    # Select and instantiate the appropriate tracing configuration
     if exporter_type == "otlp":
-        tracing_config = OTLPTracingConfig(service_name, endpoint, insecure)
+        return OTLPTracingConfig(service_name, endpoint, insecure)
     elif exporter_type == "jaeger":
-        tracing_config = JaegerTracingConfig(service_name, endpoint)
+        return JaegerTracingConfig(service_name, endpoint)
     else:
         raise ValueError(f"Unsupported exporter type: {exporter_type}")
 
-    # Configure tracing
-    tracing_config.configure_tracing()
-
-    # Instrument HTTP clients for automatic context propagation
+def instrument_http_clients():
+    """
+    Instrument HTTP clients to enable automatic trace context propagation.
+    
+    This function adds tracing capabilities to standard HTTP client libraries.
+    """
     HTTPXClientInstrumentor().instrument()
     RequestsInstrumentor().instrument()
 
-    # Distributed Tracing Middleware
+def create_distributed_tracing_middleware(service_name):
+    """
+    Create a middleware for distributed tracing with comprehensive span creation.
+    
+    Args:
+        service_name (str): Name of the current service
+    
+    Returns:
+        A middleware class for handling distributed tracing
+    """
     class DistributedTracingMiddleware(BaseHTTPMiddleware):
         async def dispatch(self, request, call_next):
-            # Skip tracing for metrics endpoint
+            # Skip tracing for metrics endpoint to avoid overhead
             if "/metrics" in request.url.path:
                 return await call_next(request)
 
-            # Extract the parent context from incoming request headers
+            # Extract trace context from incoming request headers
             context = extract(request.headers)
             token = attach(context)
             
@@ -176,69 +79,66 @@ def configure_distributed_tracing(app: FastAPI):
                     request.url.path, 
                     kind=SpanKind.SERVER
                 ) as span:
-                    # Get the current trace and span IDs
+                    # Annotate the span with request metadata
                     current_span = trace.get_current_span()
                     trace_id = format_trace_id(current_span.get_span_context().trace_id)
                     span_id = format_trace_id(current_span.get_span_context().span_id)
 
-                    # Log trace information
-                    # logger.info(
-                    #     f"Trace Information - "
-                    #     f"Service: {service_name}, "
-                    #     f"Trace ID: {trace_id}, "
-                    #     f"Span ID: {span_id}, "
-                    #     f"Path: {request.url.path}"
-                    # )
-
-                    # Add comprehensive span attributes
                     span.set_attribute("http.method", request.method)
                     span.set_attribute("http.url", str(request.url))
                     span.set_attribute("service.name", service_name)
                     span.set_attribute("trace.id", trace_id)
                     span.set_attribute("span.id", span_id)
                     
-                    # Process the request
+                    # Process the request and capture response
                     response = await call_next(request)
                     
-                    # Add response attributes
+                    # Record response details and status
                     span.set_attribute("http.status_code", response.status_code)
-
-                    # Set span status based on response
-                    if 400 <= response.status_code < 600:
-                        span.set_status(Status(StatusCode.ERROR, f"HTTP error: {response.status_code}"))
-                    else:
-                        span.set_status(Status(StatusCode.OK))
+                    span.set_status(
+                        Status(StatusCode.ERROR, f"HTTP error: {response.status_code}") 
+                        if 400 <= response.status_code < 600 
+                        else Status(StatusCode.OK)
+                    )
                     
                     return response
             except Exception as e:
-                    # Handle and record any exceptions
-                    span.set_status(Status(StatusCode.ERROR, str(e)))
-                    span.record_exception(e)
-                    raise
+                # Capture and log any exceptions during request processing
+                span.set_status(Status(StatusCode.ERROR, str(e)))
+                span.record_exception(e)
+                raise
             finally:
-                # Detach the context
+                # Always detach the context to prevent leaks
                 detach(token)
 
-    # Add the distributed tracing middleware
-    app.add_middleware(DistributedTracingMiddleware)
+    return DistributedTracingMiddleware
 
-    # Optional utility functions for more controlled tracing
+def create_traced_request_utilities(service_name):
+    """
+    Create utility functions for making traced HTTP requests.
+    
+    Args:
+        service_name (str): Name of the current service
+    
+    Returns:
+        A dictionary of request utility functions
+    """
     async def make_traced_httpx_request(url, method='GET', headers=None, data=None):
         """
         Make a traced request using httpx with explicit context propagation.
         
         Args:
-            url (str): The URL to send the request to
-            method (str, optional): HTTP method. Defaults to 'GET'.
-            headers (dict, optional): Additional headers. Defaults to None.
-            data (dict, optional): Request payload. Defaults to None.
+            url (str): Target URL
+            method (str): HTTP method
+            headers (dict, optional): Additional headers
+            data (dict, optional): Request payload
         
         Returns:
-            httpx.Response: The response from the request
+            httpx.Response: HTTP response
         """
         tracer = trace.get_tracer(__name__)
         
-        with tracer.start_as_current_span(
+        async with tracer.start_as_current_span(
             f"http.{method.lower()}", 
             kind=SpanKind.CLIENT
         ) as span:
@@ -246,7 +146,6 @@ def configure_distributed_tracing(app: FastAPI):
             request_headers = headers or {}
             inject(request_headers)
             
-            # Make the HTTP request
             async with httpx.AsyncClient() as client:
                 response = await client.request(
                     method, 
@@ -255,25 +154,26 @@ def configure_distributed_tracing(app: FastAPI):
                     data=data
                 )
                 
-                # Add request and response details to the span
+                # Record request and response details
                 span.set_attribute("http.url", url)
                 span.set_attribute("http.method", method)
                 span.set_attribute("http.status_code", response.status_code)
                 
                 return response
 
+    # Note: The synchronous requests function remains unchanged
     def make_traced_requests(url, method='GET', headers=None, data=None):
         """
         Make a traced request using requests with explicit context propagation.
         
         Args:
-            url (str): The URL to send the request to
-            method (str, optional): HTTP method. Defaults to 'GET'.
-            headers (dict, optional): Additional headers. Defaults to None.
-            data (dict, optional): Request payload. Defaults to None.
+            url (str): Target URL
+            method (str): HTTP method
+            headers (dict, optional): Additional headers
+            data (dict, optional): Request payload
         
         Returns:
-            requests.Response: The response from the request
+            requests.Response: HTTP response
         """
         tracer = trace.get_tracer(__name__)
         
@@ -285,7 +185,6 @@ def configure_distributed_tracing(app: FastAPI):
             request_headers = headers or {}
             inject(request_headers)
             
-            # Make the HTTP request
             response = requests.request(
                 method, 
                 url, 
@@ -293,13 +192,47 @@ def configure_distributed_tracing(app: FastAPI):
                 data=data
             )
                 
-            # Add request and response details to the span
+            # Record request and response details
             span.set_attribute("http.url", url)
             span.set_attribute("http.method", method)
             span.set_attribute("http.status_code", response.status_code)
             
             return response
 
-    # Attach utility functions to the app if needed
-    app.make_traced_httpx_request = make_traced_httpx_request
-    app.make_traced_requests = make_traced_requests
+    return {
+        'make_traced_httpx_request': make_traced_httpx_request,
+        'make_traced_requests': make_traced_requests
+    }
+
+def configure_distributed_tracing(app: FastAPI):
+    """
+    Configure comprehensive distributed tracing for a FastAPI application.
+    
+    This function sets up:
+    - Trace context configuration
+    - HTTP client instrumentation
+    - Distributed tracing middleware
+    - Tracing utility functions
+    
+    Args:
+        app (FastAPI): The FastAPI application to configure
+    """
+    # Load configuration from environment variables
+    config_manager = EnvConfigManager()
+    service_name = config_manager.get_service_name()
+
+    # Create and configure tracing
+    tracing_config = create_tracing_configuration(config_manager)
+    tracing_config.configure_tracing()
+
+    # Instrument HTTP clients
+    instrument_http_clients()
+
+    # Create and add distributed tracing middleware
+    DistributedTracingMiddleware = create_distributed_tracing_middleware(service_name)
+    app.add_middleware(DistributedTracingMiddleware)
+
+    # Create and attach request tracing utilities
+    request_utilities = create_traced_request_utilities(service_name)
+    app.make_traced_httpx_request = request_utilities['make_traced_httpx_request']
+    app.make_traced_requests = request_utilities['make_traced_requests']
