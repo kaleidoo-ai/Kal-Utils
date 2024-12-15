@@ -3,7 +3,7 @@ from .base_storage import BaseStorage
 import os, json, base64, string, random
 from google.cloud import storage
 from google.oauth2 import service_account
-from ..logger import init_logger
+from ..logging.logger import init_logger
 
 logger = init_logger("utils.gcs_storage")
 

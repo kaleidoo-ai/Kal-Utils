@@ -84,7 +84,7 @@ nav:
     - API Reference:
           - kal_utils module: kal_utils.md
           - requests module: requests.md
-          - logger module: logger.md
+          - logging module: logging.md
           - handle_response module: handle_response.md
           - mongodb module: mongodb.md
           - time_zone module: time_zone.md

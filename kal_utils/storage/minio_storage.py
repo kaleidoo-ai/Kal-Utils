@@ -3,7 +3,7 @@ from minio.commonconfig import CopySource
 from .base_storage import BaseStorage
 from minio import Minio
 import base64, os, random, string, json
-from ..logger import init_logger
+from ..logging.logger import init_logger
 
 logger = init_logger("utils.storage")
 
