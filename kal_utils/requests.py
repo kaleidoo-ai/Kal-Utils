@@ -1,7 +1,7 @@
 from typing import Optional
 from urllib.parse import urlparse, urlunparse
 import httpx
-from .logger import init_logger
+from .logging.logger import init_logger
 import json
 from fastapi import Request
 
