@@ -20,7 +20,6 @@ psutil
 aio-pika
 aiokafka
 loguru
-opentelemetry
 opentelemetry.instrumentation.logging
 requests
 opentelemetry.instrumentation.httpx
