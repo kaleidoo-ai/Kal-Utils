@@ -9095,8 +9095,7 @@ without errors, and to ERROR if an exception is raised.</p>
         <td><code>{}</code></td>
       </tr>
   </tbody>
-</table>      
-
+</table>
         <details class="quote">
           <summary>Source code in <code>kal_utils/monitoring/tempo/decorator_manager.py</code></summary>
           <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_span_attributes</span><span class="p">(</span><span class="o">**</span><span class="n">attributes</span><span class="p">):</span>
@@ -9110,9 +9109,6 @@ without errors, and to ERROR if an exception is raised.</p>
 <span class="sd">    Args:</span>
 <span class="sd">        **attributes: Arbitrary keyword arguments representing the attributes</span>
 <span class="sd">                      to be set on the span. For example, `key1=&quot;value1&quot;`.</span>
-
-<span class="sd">    Returns:decorator</span>
-<span class="sd">        function: The decorated asynchronous function with tracing.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
@@ -9122,18 +9118,23 @@ without errors, and to ERROR if an exception is raised.</p>
             <span class="k">with</span> <span class="n">tracer</span><span class="o">.</span><span class="n">start_as_current_span</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span> <span class="k">as</span> <span class="n">span</span><span class="p">:</span>
                 <span class="c1"># Set static attributes</span>
                 <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="c1"># Handle dynamic attributes</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;{{&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;}}&quot;</span><span class="p">):</span>
                         <span class="c1"># Extract parameter name from `{{param_name}}`</span>
-                        <span class="n">param_name</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;{{}}&quot;</span><span class="p">)</span>
-                        <span class="c1"># Get the parameter value from kwargs</span>
-                        <span class="c1"># if param_name in kwargs:</span>
-                        <span class="n">span</span><span class="o">.</span><span class="n">set_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
-                        <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
-                        <span class="c1"># elif param_name in args:</span>
-                        <span class="c1">#     span.set_attribute(key, args[param_name])</span>
+                        <span class="n">param_name</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="c1"># Try to get the parameter value from kwargs or args</span>
+                        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+                            <span class="n">span</span><span class="o">.</span><span class="n">set_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">param_name</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># Use args and match by function signature position</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="c1"># Get the parameter&#39;s position from the function signature</span>
+                                <span class="n">func_signature</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="vm">__code__</span><span class="o">.</span><span class="n">co_varnames</span>
+                                <span class="n">param_index</span> <span class="o">=</span> <span class="n">func_signature</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+                                <span class="n">span</span><span class="o">.</span><span class="n">set_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">args</span><span class="p">[</span><span class="n">param_index</span><span class="p">])</span>
+                            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                                <span class="k">pass</span>  <span class="c1"># Parameter not found</span>
                     <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Set static value</span>
                         <span class="n">span</span><span class="o">.</span><span class="n">set_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
 
                 <span class="k">try</span><span class="p">:</span>

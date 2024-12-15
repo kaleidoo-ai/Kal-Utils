@@ -626,6 +626,78 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.JsonFormatter1" class="md-nav__link">
+    <span class="md-ellipsis">
+      JsonFormatter1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JsonFormatter1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.JsonFormatter1.format" class="md-nav__link">
+    <span class="md-ellipsis">
+      format()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.MetricsLogFilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      MetricsLogFilter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MetricsLogFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.MetricsLogFilter.filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      filter()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.TraceLogFilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      TraceLogFilter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TraceLogFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.TraceLogFilter.filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      filter()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -848,6 +920,78 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.JsonFormatter1" class="md-nav__link">
+    <span class="md-ellipsis">
+      JsonFormatter1
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JsonFormatter1">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.JsonFormatter1.format" class="md-nav__link">
+    <span class="md-ellipsis">
+      format()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.MetricsLogFilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      MetricsLogFilter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="MetricsLogFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.MetricsLogFilter.filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      filter()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kal_utils.logger.TraceLogFilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      TraceLogFilter
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="TraceLogFilter">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kal_utils.logger.TraceLogFilter.filter" class="md-nav__link">
+    <span class="md-ellipsis">
+      filter()
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -977,6 +1121,284 @@ it is formatted using formatException() and appended to the message.</p>
     </div>
 
   </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="kal_utils.logger.JsonFormatter1" class="doc doc-heading">
+        <code>
+JsonFormatter1            (<span title="logging.Formatter">Formatter</span>)
+        </code>
+
+
+
+<a href="#kal_utils.logger.JsonFormatter1" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">JsonFormatter1</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="c1"># Create the log message dictionary</span>
+        <span class="n">log_message</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datefmt</span><span class="p">),</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span>
+            <span class="s2">&quot;trace_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;trace_id&quot;</span><span class="p">,</span> <span class="s2">&quot;no_trace&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;span_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;span_id&quot;</span><span class="p">,</span> <span class="s2">&quot;no_span&quot;</span><span class="p">),</span>
+            <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="kal_utils.logger.JsonFormatter1.format" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span></code>
+
+
+<a href="#kal_utils.logger.JsonFormatter1.format" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Format the specified record as text.</p>
+<p>The record's attribute dictionary is used as the operand to a
+string formatting operation which yields the returned string.
+Before formatting the dictionary, a couple of preparatory steps
+are carried out. The message attribute of the record is computed
+using LogRecord.getMessage(). If the formatting string uses the
+time (as determined by a call to usesTime(), formatTime() is
+called to format the event time. If there is exception information,
+it is formatted using formatException() and appended to the message.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="c1"># Create the log message dictionary</span>
+    <span class="n">log_message</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datefmt</span><span class="p">),</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+        <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span><span class="p">,</span>
+        <span class="s2">&quot;trace_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;trace_id&quot;</span><span class="p">,</span> <span class="s2">&quot;no_trace&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;span_id&quot;</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">&quot;span_id&quot;</span><span class="p">,</span> <span class="s2">&quot;no_span&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">log_message</span><span class="p">)</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="kal_utils.logger.MetricsLogFilter" class="doc doc-heading">
+        <code>
+MetricsLogFilter            (<span title="logging.Filter">Filter</span>)
+        </code>
+
+
+
+<a href="#kal_utils.logger.MetricsLogFilter" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">MetricsLogFilter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="c1"># More robust filtering for metrics endpoints</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;/metrics&#39;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="ow">or</span> 
+                    <span class="s1">&#39;GET /metrics&#39;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">())</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="kal_utils.logger.MetricsLogFilter.filter" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span></code>
+
+
+<a href="#kal_utils.logger.MetricsLogFilter.filter" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Determine if the specified record is to be logged.</p>
+<p>Returns True if the record should be logged, or False otherwise.
+If deemed appropriate, the record may be modified in-place.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="c1"># More robust filtering for metrics endpoints</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="p">(</span><span class="s1">&#39;/metrics&#39;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span> <span class="ow">or</span> 
+                <span class="s1">&#39;GET /metrics&#39;</span> <span class="ow">in</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">())</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
+
+  <div class="doc doc-object doc-class">
+
+
+
+<h2 id="kal_utils.logger.TraceLogFilter" class="doc doc-heading">
+        <code>
+TraceLogFilter            (<span title="logging.Filter">Filter</span>)
+        </code>
+
+
+
+<a href="#kal_utils.logger.TraceLogFilter" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents ">
+
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">class</span> <span class="nc">TraceLogFilter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Filter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+        <span class="n">current_span</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">get_current_span</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Check if span context is valid</span>
+            <span class="n">span_context</span> <span class="o">=</span> <span class="n">current_span</span><span class="o">.</span><span class="n">get_span_context</span><span class="p">()</span>
+
+            <span class="c1"># Use format methods to convert trace and span IDs</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">trace_id</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">format_trace_id</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span><span class="p">)</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">span_id</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">format_span_id</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Fallback if no active span or context is invalid</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">trace_id</span> <span class="o">=</span> <span class="s2">&quot;no_trace&quot;</span>
+            <span class="n">record</span><span class="o">.</span><span class="n">span_id</span> <span class="o">=</span> <span class="s2">&quot;no_span&quot;</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+        </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-object doc-method">
+
+
+
+<h3 id="kal_utils.logger.TraceLogFilter.filter" class="doc doc-heading">
+<code class="highlight language-python"><span class="nb">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span></code>
+
+
+<a href="#kal_utils.logger.TraceLogFilter.filter" class="headerlink" title="Permanent link">&para;</a></h3>
+
+    <div class="doc doc-contents ">
+
+      <p>Determine if the specified record is to be logged.</p>
+<p>Returns True if the record should be logged, or False otherwise.
+If deemed appropriate, the record may be modified in-place.</p>
+
+        <details class="quote">
+          <summary>Source code in <code>kal_utils/logger.py</code></summary>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+    <span class="n">current_span</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">get_current_span</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Check if span context is valid</span>
+        <span class="n">span_context</span> <span class="o">=</span> <span class="n">current_span</span><span class="o">.</span><span class="n">get_span_context</span><span class="p">()</span>
+
+        <span class="c1"># Use format methods to convert trace and span IDs</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">trace_id</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">format_trace_id</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">trace_id</span><span class="p">)</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">span_id</span> <span class="o">=</span> <span class="n">trace</span><span class="o">.</span><span class="n">format_span_id</span><span class="p">(</span><span class="n">span_context</span><span class="o">.</span><span class="n">span_id</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="c1"># Fallback if no active span or context is invalid</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">trace_id</span> <span class="o">=</span> <span class="s2">&quot;no_trace&quot;</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">span_id</span> <span class="o">=</span> <span class="s2">&quot;no_span&quot;</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+</code></pre></div>
+        </details>
+    </div>
+
+  </div>
+
+
+
+
+
+  </div>
+
+    </div>
+
+  </div>
+
+
 
 
 
