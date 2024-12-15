@@ -2,16 +2,9 @@
 
 This module provides an abstraction layer for working with different logger systems.
 
-## Classes
+## functions
 
 ### logger
 
-::: kal_utils.logging.logger
+::: kal_utils.logging.init_logger
 
-### formats
-
-::: kal_utils.logging.formats
-
-### filters
-
-::: kal_utils.logging.filters

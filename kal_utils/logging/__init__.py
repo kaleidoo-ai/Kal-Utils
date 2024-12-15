@@ -1,5 +1,3 @@
-import logger
-import formats
-import filters
+from logger import init_logger
 
-__all__ = ['logger', 'formats', 'filters']
+__all__ = ['init_logger']
