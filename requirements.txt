@@ -24,4 +24,5 @@ requests
 opentelemetry.instrumentation.logging
 opentelemetry.instrumentation.httpx
 opentelemetry.instrumentation.requests
+opentelemetry-instrumentation-fastapi
 starlette==0.38.2
