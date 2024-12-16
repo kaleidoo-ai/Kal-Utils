@@ -38,7 +38,7 @@ def suppress_noisy_loggers():
     Sets the log level to ERROR to reduce unnecessary log output.
     """
     logging.getLogger('opentelemetry').setLevel(logging.ERROR)
-    logging.getLogger('uvicorn.access').setLevel(logging.ERROR)
+    # logging.getLogger('uvicorn.access').setLevel(logging.ERROR)
     logging.getLogger('opentelemetry.trace.status').setLevel(logging.ERROR)
 
 def setup_trace_logging(root_logger):
