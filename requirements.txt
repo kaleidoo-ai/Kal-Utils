@@ -27,3 +27,6 @@ opentelemetry.instrumentation.requests
 opentelemetry-instrumentation-fastapi
 starlette==0.38.2
 kafka-python==2.0.2
+pika
+python-dotenv==1.0.0
+pydantic-settings==2.4.0
