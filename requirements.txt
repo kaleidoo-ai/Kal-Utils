@@ -17,8 +17,8 @@ opentelemetry-exporter-otlp==1.27.0
 botocore==1.35.39
 prometheus_client==0.21.1
 psutil
-aio-pika==9.5.4
-aiokafka==0.12.0
+aio-pika
+aiokafka
 loguru==0.7.3
 requests==2.32.3
 opentelemetry.instrumentation.logging==0.48b0
