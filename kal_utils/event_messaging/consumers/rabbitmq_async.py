@@ -1,6 +1,10 @@
+from datetime import datetime
 import os
 import json
 import asyncio
+import uuid
+
+from pydantic import ValidationError
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage
 import time
@@ -13,6 +17,10 @@ from kal_utils.event_messaging.core.logging import logger
 # When deployed into a larger API comment the line below
 #from loguru import logger
 from kal_utils.event_messaging.core.schema import Message
+from kal_utils.event_messaging.retrievers.consumer.async_retriever import AsyncConsumerRetriever
+from kal_utils.event_messaging.retrievers.producer.async_retriever import AsyncProducerRetriever
+from kal_utils.event_messaging.core.schema import Message, Metadata
+
 
 
 class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):
@@ -121,3 +129,39 @@ class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):
             loop.run_until_complete(self.close())
         finally:
             loop.close()
+
+    async def generic_consumer(topic: str, handler_function: callable, request_type: type):    
+        try:
+            consumer = AsyncConsumerRetriever().get_consumer(topic)
+            async with consumer:
+                async for msg in consumer.consume():                    
+                    try:
+                        request = request_type(**msg.data)
+                        await handler_function(request)
+                    except ValidationError as ve:
+                        logger.error(f"Validation error for message: {msg.data}. Error: {ve}")
+                    except Exception as e:
+                        logger.error(f"Error processing message: {msg.data}. Error: {e}")
+        except Exception as e:
+            logger.error(f"Error setting up consumer for topic '{topic}': {e}")
+
+    async def generic_producer(topic: str, body: dict):
+        try:
+            producer = AsyncProducerRetriever().get_producer(topic)
+            metadata = Metadata(
+                service=os.getenv("SERVICE_NAME", "default_service"),
+                system="On-Prem",
+                timestamp=datetime.now().isoformat()
+            )
+            msg = Message(
+                id=str(uuid.uuid4()),
+                target=topic,
+                source=os.getenv("SERVICE_NAME", "default_service"),
+                data=body,
+                metadata=metadata
+            )
+            async with producer:
+                await producer.produce(msg.model_dump_json())
+                logger.info(f"Message successfully produced to topic '{topic}': {msg}")
+        except Exception as e:
+            logger.error(f"Error producing message to topic '{topic}': {e}")
