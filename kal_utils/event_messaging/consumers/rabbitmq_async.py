@@ -1,132 +1,253 @@
-import os
-import json
 import asyncio
 import aio_pika
 from aio_pika.abc import AbstractIncomingMessage
-import time
-from typing import Any, AsyncIterator, Optional
-from weakref import WeakKeyDictionary
+from typing import AsyncIterator, Optional
+from contextlib import AsyncExitStack
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from circuitbreaker import circuit
 
 from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
-from kal_utils.event_messaging.core.settings import settings
 from kal_utils.event_messaging.core.logging import logger
+from kal_utils.event_messaging.core import settings
 from kal_utils.event_messaging.core.schema import Message
 from kal_utils.event_messaging.core.utils import RabbitMQConnectionManager, ConnectionConfig
 
 class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):
-    """
-    Enhanced asynchronous RabbitMQ consumer with connection pooling and retry mechanism.
-    
-    Features:
-    - Connection pooling via RabbitMQConnectionManager
-    - Automatic reconnection with exponential backoff
-    - Channel and queue management
-    - Error handling and logging
-    - Resource cleanup
-    """
-    
-    # Class-level connection manager to be shared across instances
-    _connection_managers = WeakKeyDictionary()
-    _connection_manager_lock = asyncio.Lock()
-    
-    def __init__(self, topic: str, stale_threshold: int = 300) -> None:
-        consumer_group = settings.SERVICES[settings.SERVICE_NAME]
-        super().__init__(topic, consumer_group)
+    def __init__(self, topic: str):
+        super().__init__(topic, settings.core.service_name)
         
-        self.__connection_string = settings.RABBITMQ_URL
-        self.__channel: Optional[aio_pika.Channel] = None
-        self.__queue: Optional[aio_pika.Queue] = None
-        # self.__last_activity = 0
-        # self.__stale_threshold = stale_threshold
-        self.__connection_manager = None
-        
-    @classmethod
-    async def get_connection_manager(cls, connection_string: str) -> RabbitMQConnectionManager:
-        """Get or create a connection manager for the given connection string."""
-        async with cls._connection_manager_lock:
-            if connection_string not in cls._connection_managers:
-                manager = RabbitMQConnectionManager(connection_string)
-                await manager.start()
-                cls._connection_managers[connection_string] = manager
-            return cls._connection_managers[connection_string]
+        self._connection_manager = RabbitMQConnectionManager(
+            settings.rabbitmq.url,
+            config=ConnectionConfig(
+                pool_size=settings.rabbitmq.pool_size,
+                connection_timeout=settings.rabbitmq.connection_timeout,
+                idle_timeout=settings.rabbitmq.idle_timeout
+            )
+        )
+        self._channel: Optional[aio_pika.Channel] = None
+        self._queue: Optional[aio_pika.Queue] = None
+        self._dlx_exchange: Optional[aio_pika.Exchange] = None
 
     async def __aenter__(self):
-        """Async context manager entry point."""
-        self.__connection_manager = await self.get_connection_manager(self.__connection_string)
+        await self._connection_manager.start()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit point."""
         await self.close()
 
+    @circuit(failure_threshold=3, recovery_timeout=60)
     async def _setup_channel(self, connection: aio_pika.Connection) -> None:
-        """Set up channel and queue with the given connection."""
-        self.__channel = await connection.channel()
+        self._channel = await connection.channel()
+        await self._channel.set_qos(prefetch_count=100)
         
-        # Declare exchange
-        exchange = await self.__channel.declare_exchange(
+        exchange = await self._channel.declare_exchange(
             self.consumer_group,
-            aio_pika.ExchangeType.DIRECT
-        )
-        
-        # Declare and bind queue
-        self.__queue = await self.__channel.declare_queue(
-            self.topic,
+            aio_pika.ExchangeType.DIRECT,
             durable=True
         )
-        await self.__queue.bind(exchange, routing_key=self.topic)
         
-        # self.__last_activity = time.time()
+        self._dlx_exchange = await self._channel.declare_exchange(
+            f"{self.consumer_group}_dlx",
+            aio_pika.ExchangeType.DIRECT,
+            durable=True
+        )
+        
+        self._queue = await self._channel.declare_queue(
+            self.topic,
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": self._dlx_exchange.name,
+                "x-max-priority": 10
+            }
+        )
+        await self._queue.bind(exchange, routing_key=self.topic)
 
-    async def consume(self) -> AsyncIterator[Any]:
-        """
-        Consume messages from the queue with automatic reconnection.
-        
-        Yields:
-            Any: Validated message objects
-        """
-        while True:
-            try:
-                async with self.__connection_manager.acquire() as connection:
-                    if not self.__channel or self.__channel.is_closed:
-                        await self._setup_channel(connection)
-                    
-                    async with self.__queue.iterator() as queue_iter:
-                        async for message in queue_iter:
-                            try:
-                                async with message.process(requeue=False):
-                                    logger.debug(f"Received message: {message.body}")
-                                    # self.__last_activity = time.time()
-                                    yield Message.model_validate_json(message.body)
-                                    logger.debug(f"Successfully processed message: {message.body}")
-                            except Exception as e:
-                                logger.error(f"Error processing message: {e}")
-                                # Only requeue if it's not a validation error
-                                if not isinstance(e, (json.JSONDecodeError, ValueError)):
-                                    message.nack(requeue=True)
-                                continue
-                            
-            except aio_pika.exceptions.ConnectionClosed:
-                logger.warning("Connection closed, attempting to reconnect...")
-                await asyncio.sleep(0.5)  # Wait before reconnection
-                continue
-                
-            except Exception as e:
-                logger.error(f"Unexpected error in consume loop: {e}")
-                # await asyncio.sleep(0)  # Uncomment If a delay between errors is desired
-                continue
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=10),
+        retry=retry_if_exception_type(aio_pika.exceptions.AMQPError)
+    )
+    async def consume(self) -> AsyncIterator[Message]:
+        async with AsyncExitStack() as stack:
+            connection = await stack.enter_async_context(
+                self._connection_manager.acquire()
+            )
+            
+            if not self._channel or self._channel.is_closed:
+                await self._setup_channel(connection)
+            
+            async with self._queue.iterator() as queue_iter:
+                async for message in queue_iter:
+                    msg_id = message.message_id or "unknown"
+                    try:
+                        parsed = Message.model_validate_json(message.body)
+                        yield parsed
+                        await message.ack()
+                    except (json.JSONDecodeError, ValidationError) as e:
+                        await message.reject(requeue=False)
+                        logger.error(f"Invalid message {msg_id}: {str(e)}")
+                    except Exception as e:
+                        await message.nack(requeue=not message.redelivered)
+                        if message.redelivered:
+                            await self._move_to_dlx(message)
+
+    async def _move_to_dlx(self, message: AbstractIncomingMessage) -> None:
+        await self._dlx_exchange.publish(
+            aio_pika.Message(
+                body=message.body,
+                headers=message.headers,
+                message_id=message.message_id
+            ),
+            routing_key=self.topic
+        )
+        await message.ack()
 
     async def close(self) -> None:
-        """Close channel and cleanup resources."""
-        if self.__channel and not self.__channel.is_closed:
-            await self.__channel.close()
-        self.__channel = None
-        self.__queue = None
+        if self._channel and not self._channel.is_closed:
+            await self._channel.close()
+        await self._connection_manager.stop()
 
     def __del__(self):
-        """Ensure resources are cleaned up."""
-        if self.__channel and not self.__channel.is_closed:
-            asyncio.create_task(self.close())
+        if self._channel and not self._channel.is_closed:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(self.close())
+                else:
+                    loop.run_until_complete(self.close())
+            except Exception as e:
+                logger.warning(f"Consumer cleanup error: {str(e)}")
+
+
+# import os
+# import json
+# import asyncio
+# import aio_pika
+# from aio_pika.abc import AbstractIncomingMessage
+# import time
+# from typing import Any, AsyncIterator, Optional
+# from weakref import WeakKeyDictionary
+
+# from kal_utils.event_messaging.consumers.base import KalSenseBaseConsumer
+# from kal_utils.event_messaging.core.settings import settings
+# from kal_utils.event_messaging.core.logging import logger
+# from kal_utils.event_messaging.core.schema import Message
+# from kal_utils.event_messaging.core.utils import RabbitMQConnectionManager, ConnectionConfig
+
+# class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):
+#     """
+#     Enhanced asynchronous RabbitMQ consumer with connection pooling and retry mechanism.
+    
+#     Features:
+#     - Connection pooling via RabbitMQConnectionManager
+#     - Automatic reconnection with exponential backoff
+#     - Channel and queue management
+#     - Error handling and logging
+#     - Resource cleanup
+#     """
+    
+#     # Class-level connection manager to be shared across instances
+#     _connection_managers = WeakKeyDictionary()
+#     _connection_manager_lock = asyncio.Lock()
+    
+#     def __init__(self, topic: str, stale_threshold: int = 300) -> None:
+#         consumer_group = settings.SERVICES[settings.SERVICE_NAME]
+#         super().__init__(topic, consumer_group)
+        
+#         self.__connection_string = settings.RABBITMQ_URL
+#         self.__channel: Optional[aio_pika.Channel] = None
+#         self.__queue: Optional[aio_pika.Queue] = None
+#         # self.__last_activity = 0
+#         # self.__stale_threshold = stale_threshold
+#         self.__connection_manager = None
+        
+#     @classmethod
+#     async def get_connection_manager(cls, connection_string: str) -> RabbitMQConnectionManager:
+#         """Get or create a connection manager for the given connection string."""
+#         async with cls._connection_manager_lock:
+#             if connection_string not in cls._connection_managers:
+#                 manager = RabbitMQConnectionManager(connection_string)
+#                 await manager.start()
+#                 cls._connection_managers[connection_string] = manager
+#             return cls._connection_managers[connection_string]
+
+#     async def __aenter__(self):
+#         """Async context manager entry point."""
+#         self.__connection_manager = await self.get_connection_manager(self.__connection_string)
+#         return self
+
+#     async def __aexit__(self, exc_type, exc_val, exc_tb):
+#         """Async context manager exit point."""
+#         await self.close()
+
+#     async def _setup_channel(self, connection: aio_pika.Connection) -> None:
+#         """Set up channel and queue with the given connection."""
+#         self.__channel = await connection.channel()
+        
+#         # Declare exchange
+#         exchange = await self.__channel.declare_exchange(
+#             self.consumer_group,
+#             aio_pika.ExchangeType.DIRECT
+#         )
+        
+#         # Declare and bind queue
+#         self.__queue = await self.__channel.declare_queue(
+#             self.topic,
+#             durable=True
+#         )
+#         await self.__queue.bind(exchange, routing_key=self.topic)
+        
+#         # self.__last_activity = time.time()
+
+#     async def consume(self) -> AsyncIterator[Any]:
+#         """
+#         Consume messages from the queue with automatic reconnection.
+        
+#         Yields:
+#             Any: Validated message objects
+#         """
+#         while True:
+#             try:
+#                 async with self.__connection_manager.acquire() as connection:
+#                     if not self.__channel or self.__channel.is_closed:
+#                         await self._setup_channel(connection)
+                    
+#                     async with self.__queue.iterator() as queue_iter:
+#                         async for message in queue_iter:
+#                             try:
+#                                 async with message.process(requeue=False):
+#                                     logger.debug(f"Received message: {message.body}")
+#                                     # self.__last_activity = time.time()
+#                                     yield Message.model_validate_json(message.body)
+#                                     logger.debug(f"Successfully processed message: {message.body}")
+#                             except Exception as e:
+#                                 logger.error(f"Error processing message: {e}")
+#                                 # Only requeue if it's not a validation error
+#                                 if not isinstance(e, (json.JSONDecodeError, ValueError)):
+#                                     message.nack(requeue=True)
+#                                 continue
+                            
+#             except aio_pika.exceptions.ConnectionClosed:
+#                 logger.warning("Connection closed, attempting to reconnect...")
+#                 await asyncio.sleep(0.5)  # Wait before reconnection
+#                 continue
+                
+#             except Exception as e:
+#                 logger.error(f"Unexpected error in consume loop: {e}")
+#                 # await asyncio.sleep(0)  # Uncomment If a delay between errors is desired
+#                 continue
+
+#     async def close(self) -> None:
+#         """Close channel and cleanup resources."""
+#         if self.__channel and not self.__channel.is_closed:
+#             await self.__channel.close()
+#         self.__channel = None
+#         self.__queue = None
+
+#     def __del__(self):
+#         """Ensure resources are cleaned up."""
+#         if self.__channel and not self.__channel.is_closed:
+#             asyncio.create_task(self.close())
 
 
 

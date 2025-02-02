@@ -1,155 +1,254 @@
 import asyncio
 import aio_pika
-import time
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from circuitbreaker import circuit
 from typing import Any, Optional
-import json
-from weakref import WeakKeyDictionary
+from contextlib import AsyncExitStack
+from pydantic import ValidationError
 
 from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
-from kal_utils.event_messaging.core.settings import settings
+from kal_utils.event_messaging.core import settings
 from kal_utils.event_messaging.core.logging import logger
-from kal_utils.event_messaging.core.utils import RabbitMQConnectionManager
+from kal_utils.event_messaging.core.schema import Message
+from kal_utils.event_messaging.core.utils import RabbitMQConnectionManager, ConnectionConfig
 
 class KalSenseAioRabbitMQProducer(KalSenseBaseProducer):
-    """
-    Enhanced asynchronous RabbitMQ producer with connection pooling and retry mechanism.
-    
-    Features:
-    - Connection pooling via RabbitMQConnectionManager
-    - Automatic reconnection with exponential backoff
-    - Channel and exchange management
-    - Message delivery confirmation
-    - Error handling and logging
-    - Resource cleanup
-    """
-    
-    # Class-level connection manager to be shared across instances
-    _connection_managers = WeakKeyDictionary()
-    _connection_manager_lock = asyncio.Lock()
-    
-    def __init__(self, topic: str, stale_threshold: int = 300) -> None:
-        producer_group = settings.SERVICES[settings.SERVICE_NAME]
-        super().__init__(topic, producer_group)
+    def __init__(self, topic: str = None, exchange_name: str = None):
+        if topic and not exchange_name:
+            self._exchange_type = aio_pika.ExchangeType.DIRECT
+        elif not topic and exchange_name:
+            self._exchange_type = aio_pika.ExchangeType.FANOUT
+        else:
+            raise ValidationError
+        super().__init__(topic, settings.core.service_name)
         
-        self.__connection_string = settings.RABBITMQ_URL
-        self.__channel: Optional[aio_pika.Channel] = None
-        self.__exchange: Optional[aio_pika.Exchange] = None
-        self.__last_activity = 0
-        self.__stale_threshold = stale_threshold
-        self.__connection_manager = None
-
-    @classmethod
-    async def get_connection_manager(cls, connection_string: str) -> RabbitMQConnectionManager:
-        """Get or create a connection manager for the given connection string."""
-        async with cls._connection_manager_lock:
-            if connection_string not in cls._connection_managers:
-                manager = RabbitMQConnectionManager(connection_string)
-                await manager.start()
-                cls._connection_managers[connection_string] = manager
-            return cls._connection_managers[connection_string]
+        self._connection_manager = RabbitMQConnectionManager(
+            settings.rabbitmq.url,
+            config=ConnectionConfig(
+                pool_size=settings.rabbitmq.pool_size,
+                connection_timeout=settings.rabbitmq.connection_timeout,
+                idle_timeout=settings.rabbitmq.idle_timeout
+            )
+        )
+        self._channel: Optional[aio_pika.Channel] = None
+        self._exchange: Optional[aio_pika.Exchange] = None
 
     async def __aenter__(self):
-        """Async context manager entry point."""
-        self.__connection_manager = await self.get_connection_manager(self.__connection_string)
+        await self._connection_manager.start()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit point."""
         await self.close()
 
+    @circuit(failure_threshold=3, recovery_timeout=60)
     async def _setup_channel(self, connection: aio_pika.Connection) -> None:
-        """Set up channel and exchange with the given connection."""
-        self.__channel = await connection.channel()
-        await self.__channel.set_qos(prefetch_count=1)
-        
-        # Declare exchange
-        self.__exchange = await self.__channel.declare_exchange(
+        self._channel = await connection.channel()
+        self._exchange = await self._channel.declare_exchange(
             self.producer_group,
-            aio_pika.ExchangeType.DIRECT
-        )
-        
-        # Declare queue and bind it to the exchange
-        queue = await self.__channel.declare_queue(
-            self.topic,
+            aio_pika.ExchangeType.DIRECT,
             durable=True
         )
-        await queue.bind(self.__exchange, routing_key=self.topic)
-        
-        self.__last_activity = time.time()
 
-    async def produce(self, message: Any, max_retries:int = 5, initial_delay:float=1.0) -> None:
-        """
-        Produce a message to the exchange with automatic reconnection and retry logic.
-        
-        Args:
-            message: The message to publish. Will be converted to JSON if not already a string.
-            max_retries: Amount of retries for sending the message
-        
-        Raises:
-            aio_pika.exceptions.PublishError: If message cannot be published after retries
-            ValueError: If message cannot be serialized to JSON
-        """
-        if not isinstance(message, str):
-            try:
-                message = json.dumps(message)
-            except Exception as e:
-                logger.error(f"Failed to serialize message to JSON: {e}")
-                raise ValueError(f"Message serialization failed: {e}")
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, max=10),
+        retry=retry_if_exception_type(aio_pika.exceptions.AMQPError)
+    )
+    async def produce(self, message: Any, **kwargs) -> None:
+        async with AsyncExitStack() as stack:
+            connection = await stack.enter_async_context(
+                self._connection_manager.acquire()
+            )
+            
+            if not self._channel or self._channel.is_closed:
+                await self._setup_channel(connection)
 
-        for attempt in range(max_retries):
-            try:
-                async with self.__connection_manager.acquire() as connection:
-                    if not self.__channel or self.__channel.is_closed:
-                        await self._setup_channel(connection)
+            if not isinstance(message, Message):
+                message = Message.model_validate(message)
+            
+            aio_message = aio_pika.Message(
+                body=message.model_dump_json().encode(),
+                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                message_id=str(message.id),
+                content_type='application/json'
+            )
 
-                    # Create message with persistence and timestamp
-                    message_body = message.encode()
-                    aio_pika_message = aio_pika.Message(
-                        body=message_body,
-                        delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
-                        timestamp=time.time(),
-                        content_type='application/json'
-                    )
-
-                    # Publish with confirmation
-                    await self.__exchange.publish(
-                        aio_pika_message,
-                        routing_key=self.topic,
-                        timeout=30  # 30 seconds timeout for publish confirmation
-                    )
-                    
-                    self.__last_activity = time.time()
-                    logger.debug(f"Successfully published message to {self.topic}")
-                    return
-
-            except aio_pika.exceptions.ConnectionClosed:
-                logger.warning("Connection closed during publish attempt")
-                if attempt < max_retries:
-                    await asyncio.sleep(initial_delay)
-                    initial_delay *= 2  # Exponential backoff
-                    continue
-                else:
-                    raise aio_pika.exceptions.ConnectionClosed(f"Failed to publish message after {max_retries} attempts: {e}")
-
-            except Exception as e:
-                logger.error(f"Error publishing message (attempt {attempt + 1}/{max_retries}): {e}")
-                if attempt < max_retries:
-                    await asyncio.sleep(initial_delay)
-                    initial_delay *= 2  # Exponential backoff
-                else:
-                    raise aio_pika.exceptions.PublishError(f"Failed to publish message after {max_retries} attempts: {e}")
+            await self._exchange.publish(
+                aio_message,
+                routing_key=self.topic,
+                timeout=settings.rabbitmq.connection_timeout
+            )
 
     async def close(self) -> None:
-        """Close channel and cleanup resources."""
-        if self.__channel and not self.__channel.is_closed:
-            await self.__channel.close()
-        self.__channel = None
-        self.__exchange = None
+        if self._channel and not self._channel.is_closed:
+            await self._channel.close()
+        await self._connection_manager.stop()
 
     def __del__(self):
-        """Ensure resources are cleaned up."""
-        if self.__channel and not self.__channel.is_closed:
-            asyncio.create_task(self.close())
+        if self._channel and not self._channel.is_closed:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(self.close())
+                else:
+                    loop.run_until_complete(self.close())
+            except Exception as e:
+                logger.warning(f"Producer cleanup error: {str(e)}")
+
+
+
+# import asyncio
+# import aio_pika
+# import time
+# from typing import Any, Optional
+# import json
+# from weakref import WeakKeyDictionary
+
+# from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
+# from kal_utils.event_messaging.core.settings import settings
+# from kal_utils.event_messaging.core.logging import logger
+# from kal_utils.event_messaging.core.utils import RabbitMQConnectionManager
+
+# class KalSenseAioRabbitMQProducer(KalSenseBaseProducer):
+#     """
+#     Enhanced asynchronous RabbitMQ producer with connection pooling and retry mechanism.
+    
+#     Features:
+#     - Connection pooling via RabbitMQConnectionManager
+#     - Automatic reconnection with exponential backoff
+#     - Channel and exchange management
+#     - Message delivery confirmation
+#     - Error handling and logging
+#     - Resource cleanup
+#     """
+    
+#     # Class-level connection manager to be shared across instances
+#     _connection_managers = WeakKeyDictionary()
+#     _connection_manager_lock = asyncio.Lock()
+    
+#     def __init__(self, topic: str, stale_threshold: int = 300) -> None:
+#         producer_group = settings.SERVICES[settings.SERVICE_NAME]
+#         super().__init__(topic, producer_group)
+        
+#         self.__connection_string = settings.RABBITMQ_URL
+#         self.__channel: Optional[aio_pika.Channel] = None
+#         self.__exchange: Optional[aio_pika.Exchange] = None
+#         self.__last_activity = 0
+#         self.__stale_threshold = stale_threshold
+#         self.__connection_manager = None
+
+#     @classmethod
+#     async def get_connection_manager(cls, connection_string: str) -> RabbitMQConnectionManager:
+#         """Get or create a connection manager for the given connection string."""
+#         async with cls._connection_manager_lock:
+#             if connection_string not in cls._connection_managers:
+#                 manager = RabbitMQConnectionManager(connection_string)
+#                 await manager.start()
+#                 cls._connection_managers[connection_string] = manager
+#             return cls._connection_managers[connection_string]
+
+#     async def __aenter__(self):
+#         """Async context manager entry point."""
+#         self.__connection_manager = await self.get_connection_manager(self.__connection_string)
+#         return self
+
+#     async def __aexit__(self, exc_type, exc_val, exc_tb):
+#         """Async context manager exit point."""
+#         await self.close()
+
+#     async def _setup_channel(self, connection: aio_pika.Connection) -> None:
+#         """Set up channel and exchange with the given connection."""
+#         self.__channel = await connection.channel()
+#         await self.__channel.set_qos(prefetch_count=1)
+        
+#         # Declare exchange
+#         self.__exchange = await self.__channel.declare_exchange(
+#             self.producer_group,
+#             aio_pika.ExchangeType.DIRECT
+#         )
+        
+#         # Declare queue and bind it to the exchange
+#         queue = await self.__channel.declare_queue(
+#             self.topic,
+#             durable=True
+#         )
+#         await queue.bind(self.__exchange, routing_key=self.topic)
+        
+#         self.__last_activity = time.time()
+
+#     async def produce(self, message: Any, max_retries:int = 5, initial_delay:float=1.0) -> None:
+#         """
+#         Produce a message to the exchange with automatic reconnection and retry logic.
+        
+#         Args:
+#             message: The message to publish. Will be converted to JSON if not already a string.
+#             max_retries: Amount of retries for sending the message
+        
+#         Raises:
+#             aio_pika.exceptions.PublishError: If message cannot be published after retries
+#             ValueError: If message cannot be serialized to JSON
+#         """
+#         if not isinstance(message, str):
+#             try:
+#                 message = json.dumps(message)
+#             except Exception as e:
+#                 logger.error(f"Failed to serialize message to JSON: {e}")
+#                 raise ValueError(f"Message serialization failed: {e}")
+
+#         for attempt in range(max_retries):
+#             try:
+#                 async with self.__connection_manager.acquire() as connection:
+#                     if not self.__channel or self.__channel.is_closed:
+#                         await self._setup_channel(connection)
+
+#                     # Create message with persistence and timestamp
+#                     message_body = message.encode()
+#                     aio_pika_message = aio_pika.Message(
+#                         body=message_body,
+#                         delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+#                         timestamp=time.time(),
+#                         content_type='application/json'
+#                     )
+
+#                     # Publish with confirmation
+#                     await self.__exchange.publish(
+#                         aio_pika_message,
+#                         routing_key=self.topic,
+#                         timeout=30  # 30 seconds timeout for publish confirmation
+#                     )
+                    
+#                     self.__last_activity = time.time()
+#                     logger.debug(f"Successfully published message to {self.topic}")
+#                     return
+
+#             except aio_pika.exceptions.ConnectionClosed:
+#                 logger.warning("Connection closed during publish attempt")
+#                 if attempt < max_retries:
+#                     await asyncio.sleep(initial_delay)
+#                     initial_delay *= 2  # Exponential backoff
+#                     continue
+#                 else:
+#                     raise aio_pika.exceptions.ConnectionClosed(f"Failed to publish message after {max_retries} attempts: {e}")
+
+#             except Exception as e:
+#                 logger.error(f"Error publishing message (attempt {attempt + 1}/{max_retries}): {e}")
+#                 if attempt < max_retries:
+#                     await asyncio.sleep(initial_delay)
+#                     initial_delay *= 2  # Exponential backoff
+#                 else:
+#                     raise aio_pika.exceptions.PublishError(f"Failed to publish message after {max_retries} attempts: {e}")
+
+#     async def close(self) -> None:
+#         """Close channel and cleanup resources."""
+#         if self.__channel and not self.__channel.is_closed:
+#             await self.__channel.close()
+#         self.__channel = None
+#         self.__exchange = None
+
+#     def __del__(self):
+#         """Ensure resources are cleaned up."""
+#         if self.__channel and not self.__channel.is_closed:
+#             asyncio.create_task(self.close())
 
 
 
