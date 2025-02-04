@@ -27,9 +27,10 @@ class MinIOStorage(BaseStorage):
                 minio_creds['url'],
                 access_key=minio_creds['accessKey'],
                 secret_key=minio_creds['secretKey'],
-                secure=minio_creds.get('secure', False)
+                secure=minio_creds.get('secure', False),
+                secure_cert=False
             )
-            self.url = f"http://{minio_creds['url']}"
+            self.url = f"https://{minio_creds['url']}" if minio_creds.get('secure', False) else f"http://{minio_creds['url']}"
         else:
             logger.info("credentials is None, trying to initialize storage with environment variables")
             if not (os.environ.get('MINIO_ENDPOINT') and os.environ.get('MINIO_ACCESS_KEY') and os.environ.get('MINIO_SECRET_KEY')):
@@ -38,9 +39,10 @@ class MinIOStorage(BaseStorage):
                 os.environ.get('MINIO_ENDPOINT'),
                 access_key=os.environ.get('MINIO_ACCESS_KEY'),
                 secret_key=os.environ.get('MINIO_SECRET_KEY'),
-                secure=os.environ.get('MINIO_SECURE', "false") == "true"
+                secure=os.environ.get('MINIO_SECURE', "false") == "true",
+                secure_cert=False
             )
-            self.url = f"http://{os.environ.get('MINIO_ENDPOINT')}"
+            self.url = f"https://{os.environ.get('MINIO_ENDPOINT')}" if os.environ.get('MINIO_SECURE', "false") == "true" else f"http://{os.environ.get('MINIO_ENDPOINT')}"
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
         try:
