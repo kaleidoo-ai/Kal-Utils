@@ -7,6 +7,7 @@ import json
 # from unittest.mock import patch, MagicMock
 
 # Local Module imports
+from kal_utils.event_messaging.producers.rabbitmq_async import KalSenseAioRabbitMQProducer
 from kal_utils.event_messaging.retrievers.producer.base_producer_retriever import BaseProducerRetriever
 
 # load environment variables
@@ -24,7 +25,7 @@ class AsyncProducerRetriever(BaseProducerRetriever):
         """
         logger.debug("start init ProducerRetriever")
         super().__init__()
-        self.__mode = settings.SYS_EVENT_MODE
+        self.__mode = settings.rabbitmq.event_mode
         if self.mode == "kafka":
             from kal_utils.event_messaging.producers.kafka_async import KalSenseAioKafkaProducer
             logger.debug("start init kafka:ProducerRetriever")
@@ -43,13 +44,10 @@ class AsyncProducerRetriever(BaseProducerRetriever):
     def mode(self):
         return self.__mode
     
-    def get_producer(self, topic:str) -> object:
-        """return a child instance of KalSenseBaseProducer with the connection details.
-
-        Args:
-            topic (str): topic to consume from.
-
-        Returns:
-            KalSenseBaseProducer: a child instance of KalSenseBaseProducer with connection details already
+    def get_producer(self, 
+                     topic: str = None, 
+                     exchange_name: str = None) -> KalSenseAioRabbitMQProducer:
         """
-        return self.__producer_cls(topic=topic)
+        Return a RabbitMQ producer set for direct exchange (topic) or fanout exchange (exchange_name).
+        """
+        return self.__producer_cls(topic=topic, exchange_name=exchange_name)

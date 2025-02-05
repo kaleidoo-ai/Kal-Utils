@@ -9,7 +9,7 @@ from kal_utils.event_messaging.retrievers.consumer.base_consumer_retriever impor
 # load environment variables
 from kal_utils.event_messaging.core.settings import settings
 
-SYS_EVENT_MODE = settings.SYS_EVENT_MODE
+SYS_EVENT_MODE = settings.rabbitmq.event_mode
 
 class ConsumerRetriever(BaseConsumerRetriever):
     def __init__(self) -> None:

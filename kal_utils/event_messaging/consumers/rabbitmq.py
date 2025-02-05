@@ -14,7 +14,7 @@ class KalSenseRabbitMQConsumer(KalSenseBaseConsumer):
     
     This class provides functionality to consume messages from a RabbitMQ queue.
     """
-    __consumer_conn = settings.RABBITMQ_URL
+    __consumer_conn = settings.rabbitmq.url
     
     def __init__(self, topic: str) -> None:
         consumer_group = settings.SERVICES[settings.SERVICE_NAME]

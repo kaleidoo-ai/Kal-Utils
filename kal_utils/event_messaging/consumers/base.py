@@ -1,11 +1,20 @@
 from abc import ABC, abstractmethod
 
 class KalSenseBaseConsumer(ABC):
-    def __init__(self, topic:str, consumer_group:str) -> None:
+    def __init__(self, topic: str, consumer_group: str, exchange_type: str = "direct") -> None:
         super().__init__()
-        self.__topic = topic # Immutable
-        self.__consumer_group = consumer_group # Immutable
-        self.__consumer = None # Immutable
+        self.__topic = topic
+        self.__consumer_group = consumer_group
+        self.__exchange_type = exchange_type
+        self.__consumer = None
+    
+    @property
+    def exchange_type(self) -> str:
+        return self.__exchange_type
+    
+    @exchange_type.setter
+    def exchange_type(self, value: str):
+        raise ValueError("Exchange type cannot be changed once set")
     
     @property
     def topic(self) -> str:

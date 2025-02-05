@@ -1,198 +1,116 @@
 import asyncio
 import aio_pika
-import time
-from typing import Any
-import json
+from pydantic import ValidationError
+from typing import Any, Optional
+from contextlib import AsyncExitStack
 
 from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
 from kal_utils.event_messaging.core.settings import settings
-# When deployed into a larger API uncomment the line below
 from kal_utils.event_messaging.core.logging import logger
-# When deployed into a larger API comment the line below
-# from loguru import logger
+from kal_utils.event_messaging.core.schema import Message
+
+
 
 class KalSenseAioRabbitMQProducer(KalSenseBaseProducer):
     """
-    An asynchronous RabbitMQ producer for the KalSense system.
-
-    This class provides functionality to produce messages to a RabbitMQ exchange
-    using the aio_pika library. It handles connection management, including
-    automatic reconnection for stale connections.
-
-    Attributes:
-        topic (str): The topic to produce messages to.
-        producer_group (str): The producer group name.
-
-    Args:
-        topic (str): The topic to produce messages to.
-        producer_group (str): The producer group name.
-        connection_string (str): The RabbitMQ connection string.
-        stale_threshold (int, optional): The time in seconds after which a connection
-            is considered stale. Defaults to 300 seconds (5 minutes).
+    An asynchronous RabbitMQ producer that can handle either a direct or fanout exchange.
+    If `topic` is provided, a direct exchange is used.
+    If `exchange_name` is provided (and topic=None), a fanout exchange is used.
     """
 
-    def __init__(self, topic: str, stale_threshold: int = 300) -> None:
-        # producer_group is the queue and the topic is the exchange
-        # and it should be: producer_group is exchange and topic is the queue & routing key 
-        producer_group = settings.SERVICES[settings.SERVICE_NAME]
-        super().__init__(topic, producer_group)
-        self.__connection_string = settings.RABBITMQ_URL
-        self.__connection = None
-        self.__channel = None
-        self.__exchange = None
-        self.__last_activity = 0
-        self.__stale_threshold = stale_threshold
+    def __init__(self, 
+                 topic: Optional[str] = None, 
+                 exchange_name: Optional[str] = None):
+        # Decide exchange type
+        if topic and not exchange_name:
+            exchange_type = "direct"
+            self._exchange_name = topic  # or some other naming
+            self._routing_key = topic
+        elif exchange_name and not topic:
+            exchange_type = "fanout"
+            self._exchange_name = exchange_name
+            self._routing_key = ""  # routing key is typically ignored in fanout
+        else:
+            raise ValueError(
+                "Please provide exactly one of `topic` (for direct exchange) "
+                "or `exchange_name` (for fanout exchange), but not both."
+            )
+
+        super().__init__(topic or exchange_name, settings.core.service_name, exchange_type=exchange_type)
+        from kal_utils.event_messaging.core.utils.connection_manager import RabbitMQConnectionManager, ConnectionConfig
+        
+        self._connection_manager = RabbitMQConnectionManager(
+            settings.rabbitmq.url,
+            config=ConnectionConfig(
+                pool_size=settings.rabbitmq.pool_size,
+                connection_timeout=settings.rabbitmq.connection_timeout,
+                idle_timeout=settings.rabbitmq.idle_timeout
+            )
+        )
+        self._channel: Optional[aio_pika.Channel] = None
+        self._exchange: Optional[aio_pika.Exchange] = None
 
     async def __aenter__(self):
-        """Async context manager entry point."""
-        await self.__ensure_connection()
+        await self._connection_manager.start()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """Async context manager exit point."""
         await self.close()
 
-    async def __connect(self):
-        """Establish a connection to RabbitMQ."""
-        self.__connection = await aio_pika.connect_robust(self.__connection_string)
-        self.__channel = await self.__connection.channel()
-        self.__exchange = await self.__channel.declare_exchange(self.producer_group, aio_pika.ExchangeType.DIRECT)
-        queue = await self.__channel.declare_queue(self.topic, durable=True)
-        await queue.bind(self.__exchange, routing_key=self.topic)
-        self.__last_activity = time.time()
+    async def _setup_channel(self, connection: aio_pika.Connection) -> None:
+        self._channel = await connection.channel()
 
-    async def __ensure_connection(self):
-        """Ensure that a connection exists, creating one if necessary."""
-        if not self.__connection or self.__connection.is_closed:
-            await self.__connect()
+        # Decide exchange type
+        if self.exchange_type == "direct":
+            exchange_type = aio_pika.ExchangeType.DIRECT
+        else:  # "fanout"
+            exchange_type = aio_pika.ExchangeType.FANOUT
 
-    async def __check_and_renew_connection(self):
-        """Check if the connection is stale and renew it if necessary."""
-        current_time = time.time()
-        if current_time - self.__last_activity > self.__stale_threshold:
-            await self.close()
-            await self.__connect()
-
-    async def produce(self, message: Any):
-        """
-        Produce a message to the exchange.
-
-        Args:
-            message (Any): The message to produce.
-            routing_key (str, optional): The routing key for the message. Defaults to "#".
-        """
-        await self.__ensure_connection()
-        await self.__check_and_renew_connection()
-        if not isinstance(message, str):
-            message = json.dumps(message)
-        await self.__exchange.publish(
-            aio_pika.Message(body=message.encode()),
-            routing_key=self.topic
+        # Declare the exchange (durable)
+        self._exchange = await self._channel.declare_exchange(
+            self._exchange_name,
+            exchange_type,
+            durable=True
         )
-        self.__last_activity = time.time()
 
-    async def close(self):
-        """Close the connection to RabbitMQ."""
-        if self.__connection and not self.__connection.is_closed:
-            await self.__connection.close()
-        self.__connection = None
-        self.__channel = None
-        self.__exchange = None
+    async def produce(self, message: Any, **kwargs) -> None:
+        async with AsyncExitStack() as stack:
+            connection = await stack.enter_async_context(
+                self._connection_manager.acquire()
+            )
+            if not self._channel or self._channel.is_closed:
+                await self._setup_channel(connection)
+
+            # If the user didn't pass a pydantic Message, parse/validate
+            if not isinstance(message, Message):
+                message = Message.model_validate(message)
+
+            aio_message = aio_pika.Message(
+                body=message.model_dump_json().encode(),
+                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                message_id=str(message.id),
+                content_type='application/json'
+            )
+
+            # For direct, we use self._routing_key; for fanout, an empty key is typical
+            await self._exchange.publish(
+                aio_message,
+                routing_key=self._routing_key,
+                timeout=settings.rabbitmq.connection_timeout
+            )
+
+    async def close(self) -> None:
+        if self._channel and not self._channel.is_closed:
+            await self._channel.close()
+        await self._connection_manager.stop()
 
     def __del__(self):
-        """Destructor to ensure resources are cleaned up."""
-        if self.__connection and not self.__connection.is_closed:
-            self._sync_close()
-
-    def _sync_close(self):
-        """Synchronously close the asynchronous connection."""
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            loop.run_until_complete(self.close())
-        finally:
-            loop.close()
-
-
-# ------------------------------------------- UNIT TEST -------------------------------------------
-
-import unittest
-from unittest.mock import patch, MagicMock
-import asyncio
-
-class TestKalSenseRabbitMQProducer(unittest.TestCase):
-    """
-    Unit tests for the KalSenseRabbitMQProducer class.
-    
-    These tests cover the initialization, connection, message production,
-    and cleanup processes of the RabbitMQ producer.
-    """
-
-    def setUp(self):
-        """Set up the test environment before each test."""
-        self.topic = "test_topic"
-        self.test_message = {"key": "value"}
-
-    @patch('your_module.aio_pika.connect_robust')
-    def test_initialization(self, mock_connect):
-        """Test the initialization of KalSenseRabbitMQProducer."""
-        producer = KalSenseAioRabbitMQProducer(self.topic)
-        self.assertEqual(producer.topic, self.topic)
-        mock_connect.assert_called_once()
-
-    @patch('your_module.aio_pika.connect_robust')
-    @patch('your_module.aio_pika.Message')
-    async def test_produce_message(self, mock_message, mock_connect):
-        """Test the production of a message."""
-        mock_connection = MagicMock()
-        mock_channel = MagicMock()
-        mock_exchange = MagicMock()
-        mock_connect.return_value = mock_connection
-        mock_connection.channel.return_value = mock_channel
-        mock_channel.default_exchange = mock_exchange
-
-        producer = KalSenseAioRabbitMQProducer(self.topic)
-        await producer.produce(self.test_message)
-
-        mock_exchange.publish.assert_called_once()
-        mock_message.assert_called_once_with(body=b'{"key": "value"}')
-
-    @patch('your_module.aio_pika.connect_robust')
-    async def test_connection_error(self, mock_connect):
-        """Test error handling during connection."""
-        mock_connect.side_effect = Exception("Connection failed")
-
-        with self.assertRaises(Exception):
-            KalSenseAioRabbitMQProducer(self.topic)
-
-    @patch('your_module.aio_pika.connect_robust')
-    @patch('your_module.aio_pika.Message')
-    async def test_produce_error(self, mock_message, mock_connect):
-        """Test error handling during message production."""
-        mock_connection = MagicMock()
-        mock_channel = MagicMock()
-        mock_exchange = MagicMock()
-        mock_connect.return_value = mock_connection
-        mock_connection.channel.return_value = mock_channel
-        mock_channel.default_exchange = mock_exchange
-        mock_exchange.publish.side_effect = Exception("Publish failed")
-
-        producer = KalSenseAioRabbitMQProducer(self.topic)
-        
-        with patch('builtins.print') as mock_print:
-            await producer.produce(self.test_message)
-            mock_print.assert_called_with("Error producing message: Publish failed")
-
-    @patch('your_module.aio_pika.connect_robust')
-    def test_cleanup(self, mock_connect):
-        """Test the cleanup process when the producer is deleted."""
-        mock_connection = MagicMock()
-        mock_connect.return_value = mock_connection
-
-        producer = KalSenseAioRabbitMQProducer(self.topic)
-        del producer
-
-        mock_connection.close.assert_called_once()
-
-if __name__ == '__main__':
-    unittest.main()
+        if self._channel and not self._channel.is_closed:
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    loop.create_task(self.close())
+                else:
+                    loop.run_until_complete(self.close())
+            except Exception as e:
+                logger.warning(f"Producer cleanup error: {str(e)}")

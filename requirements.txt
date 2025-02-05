@@ -30,3 +30,4 @@ kafka-python==2.0.2
 pika
 python-dotenv
 pydantic-settings
+tenacity
