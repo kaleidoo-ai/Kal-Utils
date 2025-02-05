@@ -4,12 +4,20 @@ from abc import ABC, abstractmethod
 import unittest
 
 class KalSenseBaseProducer(ABC):
-    def __init__(self, topic:str, producer_group) -> None:
+    def __init__(self, topic: str, producer_group: str, exchange_type: str = "direct") -> None:
         super().__init__()
         self.__topic = topic
         self.__producer_group = producer_group
+        self.__exchange_type = exchange_type
         self.__producer = None
-        pass
+
+    @property
+    def exchange_type(self) -> str:
+        return self.__exchange_type
+    
+    @exchange_type.setter
+    def exchange_type(self, value: str):
+        raise ValueError("Exchange type cannot be changed once set")
     
     @property
     def topic(self) -> str:

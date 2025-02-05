@@ -59,7 +59,8 @@ class KalSenseRabbitMQProducer(KalSenseBaseProducer):
             self.__channel.basic_publish(
                 exchange='',
                 routing_key=self.topic,
-                body=json.dumps(message).encode("utf-8")
+                body=json.dumps(message).encode("utf-8"),
+                properties=pika.BasicProperties(pika.DeliveryMode.Persistent)
             )
         except Exception as e:
             logger.error(f"Error producing message: {e}")
