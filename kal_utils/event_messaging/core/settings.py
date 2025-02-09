@@ -7,9 +7,13 @@ from pydantic_settings import BaseSettings
 
 class RabbitMQSettings(BaseSettings):
     """RabbitMQ-specific configuration"""
-    host: str = Field(..., alias="RABBITMQ_SERVICE_HOST")
-    port: int = Field(5672, alias="RABBITMQ_SERVICE_PORT")
-    url: str = Field(..., alias="RABBITMQ_URL")
+    host: str = Field(..., alias="RABBITMQ_HOST")
+    port: int = Field(5672, alias="RABBITMQ_PORT")
+    user: str = Field(..., alias="RABBITMQ_USER")
+    password: int = Field(..., alias="RABBITMQ_PASS")
+    protocol: str = Field(..., alias="RABBITMQ_PROTO")
+    # Constructing the RabbitMQ URL
+    url = f"{protocol}://{user}:{password}@{host}:{port}"
     connection_timeout: int = Field(30, alias="RABBITMQ_CONNECTION_TIMEOUT")
     pool_size: int = Field(5, alias="RABBITMQ_POOL_SIZE")
     event_mode: str = Field(..., alias="SYS_EVENT_MODE")
