@@ -1,6 +1,7 @@
 import os
 import json
 import pika
+import ssl
 from dotenv import load_dotenv
 
 from kal_utils.event_messaging.producers.base import KalSenseBaseProducer
@@ -37,14 +38,53 @@ class KalSenseRabbitMQProducer(KalSenseBaseProducer):
         """
         Establish a connection to RabbitMQ and create a channel.
         """
-        host = settings.RABBITMQ_SERVICE_HOST
-        port = settings.RABBITMQ_SERVICE_PORT
-        user = settings.DEFAULT_USER_NAME
-        password = settings.DEFAULT_PASSWORD
-        logger.info(f"Connecting to RabbitMQ: {host}:{port}")
+        host = settings.RABBITMQ_HOST
+        port = settings.RABBITMQ_PORT
+        user = settings.RABBITMQ_USER
+        password = settings.RABBITMQ_PASS
+        use_ssl = settings.RABBITMQ_PROTO.lower() == 'amqps'  # Check if SSL should be enabled
+
+        logger.info(f"Connecting to RabbitMQ: {host}:{port} using {'SSL' if use_ssl else 'non-SSL'}")
+
+        # Set up credentials for RabbitMQ connection
         self.__credentials = pika.PlainCredentials(username=user, password=password)
-        self.__connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, port=int(port), credentials=self.__credentials))
+        
+        # Default connection parameters
+        connection_params = pika.ConnectionParameters(
+            host=host,
+            port=int(port),
+            credentials=self.__credentials
+        )
+
+        # If SSL is enabled, configure SSL context and update connection parameters
+        if use_ssl:
+            # Create SSL context
+            context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+
+            # Load certificates if needed
+            client_cert_path = settings.RABBITMQ_CLIENT_CERT_PATH
+            client_key_path = settings.RABBITMQ_CLIENT_KEY_PATH
+            ca_cert_path = settings.RABBITMQ_CA_CERT_PATH
+
+            if client_cert_path and client_key_path and ca_cert_path:
+                logger.info("Loading SSL certificates")
+                context.load_cert_chain(certfile=client_cert_path, keyfile=client_key_path)
+                context.load_verify_locations(cafile=ca_cert_path)
+                context.check_hostname = True  # Ensure server hostname matches certificate
+                context.verify_mode = ssl.CERT_REQUIRED  # Enforce certificate verification
+
+            # Add SSL options to connection parameters
+            ssl_options = pika.SSLOptions(context)
+            connection_params.ssl_options = ssl_options
+
+        # Establish the connection
+        self.__connection = pika.BlockingConnection(connection_params)
         self.__channel = self.__connection.channel()
+
+        # Set QoS to control the number of messages sent over the channel before an ack is required
+        self.__channel.basic_qos(prefetch_count=10)
+
+        # Declare the queue (replace with your queue/topic name)
         self.__queue = self.__channel.queue_declare(queue=self.topic, durable=True, auto_delete=False, exclusive=False)
 
 
