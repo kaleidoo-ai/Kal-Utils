@@ -98,7 +98,11 @@ async def generic_consumer(
                 try:
                     # request_type is the pydantic model the developer wants to parse into
                     request = request_type(**msg.data)
-                    await handler_function(request)
+                    # Call the appropriate handler function
+                    if handler_function.__code__.co_argcount == 2:  # handler expects only the request
+                        await handler_function(request)
+                    else:  # handler expects both request and source
+                        await handler_function(request, msg.source)
                 except ValidationError as ve:
                     logger.error(f"Validation error for message: {msg.data}. Error: {ve}")
                 except Exception as e:
