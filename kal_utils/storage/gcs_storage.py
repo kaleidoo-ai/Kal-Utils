@@ -495,7 +495,7 @@ class GCSStorage(BaseStorage):
             logger.error(f"Error occurred while trying to delete file: {str(e)}")
             return False
 
-    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60):
+    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60, return_self_url = False):
         """
         Generates a signed URL for a file in Google Cloud Storage.
 
