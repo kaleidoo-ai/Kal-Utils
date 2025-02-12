@@ -30,8 +30,9 @@ class MinIOStorage(BaseStorage):
                 secure=minio_creds.get('secure', False),
                 cert_check=False
             )
-            given_url = minio_creds['external_url'] if minio_creds.get('external_url', None) is not None else minio_creds['url']
-            self.url = f"https://{given_url}" if minio_creds.get('secure', "false") == "true" else f"http://{given_url}"
+            external_exists = minio_creds.get('external_url', None) is not None
+            given_url = minio_creds['external_url'] if external_exists else minio_creds['url']
+            self.url = f"https://{given_url}" if (minio_creds.get('secure', "false") == "true" or external_exists) else f"http://{given_url}"
         else:
             logger.info("credentials is None, trying to initialize storage with environment variables")
             if not (os.environ.get('MINIO_ENDPOINT') and os.environ.get('MINIO_ACCESS_KEY') and os.environ.get('MINIO_SECRET_KEY')):
@@ -43,9 +44,9 @@ class MinIOStorage(BaseStorage):
                 secure=os.environ.get('MINIO_SECURE', "false") == "true",
                 cert_check=False
             )
-            given_url = os.environ.get('MINIO_ENDPOINT_EXTERNAL') if os.environ.get('MINIO_ENDPOINT_EXTERNAL', None) is not None else \
-            os.environ.get('MINIO_ENDPOINT')
-            self.url = f"https://{given_url}" if os.environ.get('MINIO_SECURE', "false") == "true" else f"http://{given_url}"
+            external_exists = os.environ.get('MINIO_ENDPOINT_EXTERNAL', None) is not None
+            given_url = os.environ.get('MINIO_ENDPOINT_EXTERNAL') if external_exists else os.environ.get('MINIO_ENDPOINT')
+            self.url = f"https://{given_url}" if (os.environ.get('MINIO_SECURE', "false") == "true" or external_exists) else f"http://{given_url}"
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
         try:
