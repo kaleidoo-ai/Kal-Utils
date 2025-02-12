@@ -67,7 +67,7 @@ class BaseStorage(ABC):
         pass
 
     @abstractmethod
-    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60):
+    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60, return_self_url = False):
         pass
 
     @abstractmethod

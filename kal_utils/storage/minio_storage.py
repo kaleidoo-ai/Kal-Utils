@@ -30,7 +30,8 @@ class MinIOStorage(BaseStorage):
                 secure=minio_creds.get('secure', False),
                 cert_check=False
             )
-            self.url = f"https://{minio_creds['url']}" if minio_creds.get('secure', False) else f"http://{minio_creds['url']}"
+            given_url = minio_creds['external_url'] if minio_creds.get('external_url', None) is not None else minio_creds['url']
+            self.url = f"https://{given_url}" if minio_creds.get('secure', "false") == "true" else f"http://{given_url}"
         else:
             logger.info("credentials is None, trying to initialize storage with environment variables")
             if not (os.environ.get('MINIO_ENDPOINT') and os.environ.get('MINIO_ACCESS_KEY') and os.environ.get('MINIO_SECRET_KEY')):
@@ -42,7 +43,9 @@ class MinIOStorage(BaseStorage):
                 secure=os.environ.get('MINIO_SECURE', "false") == "true",
                 cert_check=False
             )
-            self.url = f"https://{os.environ.get('MINIO_ENDPOINT')}" if os.environ.get('MINIO_SECURE', "false") == "true" else f"http://{os.environ.get('MINIO_ENDPOINT')}"
+            given_url = os.environ.get('MINIO_ENDPOINT_EXTERNAL') if os.environ.get('MINIO_ENDPOINT_EXTERNAL', None) is not None else \
+            os.environ.get('MINIO_ENDPOINT')
+            self.url = f"https://{given_url}" if os.environ.get('MINIO_SECURE', "false") == "true" else f"http://{given_url}"
 
     def create_bucket(self, bucket_name, location="me-west1", storage_class="Standard"):
         try:
@@ -555,7 +558,7 @@ class MinIOStorage(BaseStorage):
             logger.error(f"Error occurred while trying to delete file: {str(e)}")
             return False
 
-    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60):
+    async def generate_signed_url(self, bucket_name, file_path, expiration_time_minutes=60, return_self_url = False):
         """
         Generates a presigned URL for a file in MinIO.
 
@@ -576,6 +579,9 @@ class MinIOStorage(BaseStorage):
                 return None
 
             # Generate a presigned URL for the object
+            if return_self_url:
+                return f"{self.url}/{bucket_name}/{file_path}"
+
             url = self.client.presigned_get_object(
                 bucket_name,
                 file_path,
