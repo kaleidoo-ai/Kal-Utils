@@ -13,7 +13,10 @@ class RabbitMQSettings(BaseSettings):
     password: str = Field(..., alias="RABBITMQ_PASS")
     protocol: str = Field(..., alias="RABBITMQ_PROTO")
     # Constructing the RabbitMQ URL
-    url: str = f"{protocol}://{user}:{password}@{host}:{port}"
+    @property
+    def url(self) -> str:
+        return f"{self.protocol}://{self.user}:{self.password}@{self.host}:{self.port}"
+    
     connection_timeout: int = Field(30, alias="RABBITMQ_CONNECTION_TIMEOUT")
     pool_size: int = Field(5, alias="RABBITMQ_POOL_SIZE")
     event_mode: str = Field(..., alias="SYS_EVENT_MODE")
