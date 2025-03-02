@@ -8,9 +8,9 @@ from pydantic_settings import BaseSettings
 class RabbitMQSettings(BaseSettings):
     """RabbitMQ-specific configuration"""
     host: str = Field(..., alias="RABBITMQ_HOST")
-    port: int = Field(5672, alias="RABBITMQ_PORT")
+    port: str = Field(..., alias="RABBITMQ_PORT")
     user: str = Field(..., alias="RABBITMQ_USER")
-    password: int = Field(..., alias="RABBITMQ_PASS")
+    password: str = Field(..., alias="RABBITMQ_PASS")
     protocol: str = Field(..., alias="RABBITMQ_PROTO")
     # Constructing the RabbitMQ URL
     url: str = f"{protocol}://{user}:{password}@{host}:{port}"
@@ -18,12 +18,6 @@ class RabbitMQSettings(BaseSettings):
     pool_size: int = Field(5, alias="RABBITMQ_POOL_SIZE")
     event_mode: str = Field(..., alias="SYS_EVENT_MODE")
     idle_timeout: float = 300.0
-
-    @field_validator('url')
-    def validate_url(cls, v):
-        if not v.startswith("amqp://"):
-            raise ValueError("Invalid RabbitMQ URL format")
-        return v
 
 class CoreSettings(BaseSettings):
     """Application core configuration"""
