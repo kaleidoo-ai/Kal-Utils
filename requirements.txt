@@ -25,7 +25,7 @@ opentelemetry.instrumentation.logging==0.48b0
 opentelemetry.instrumentation.httpx==0.48b0
 opentelemetry.instrumentation.requests==0.48b0
 opentelemetry-instrumentation-fastapi==0.48b0
-starlette==0.38.2
+starlette==0.40.0
 kafka-python==2.0.2
 pika
 python-dotenv
