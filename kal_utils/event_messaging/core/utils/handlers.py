@@ -99,7 +99,7 @@ async def generic_consumer(
                     # request_type is the pydantic model the developer wants to parse into
                     request = request_type(**msg.data)
                     # Call the appropriate handler function
-                    if handler_function.__code__.co_argcount == 2:  # handler expects only the request
+                    if handler_function.__code__.co_argcount == 1:  # handler expects only the request
                         await handler_function(request)
                     else:  # handler expects both request and source
                         await handler_function(request, msg.source)
