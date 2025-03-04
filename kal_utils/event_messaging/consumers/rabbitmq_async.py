@@ -78,7 +78,7 @@ class KalSenseAioRabbitMQConsumer(KalSenseBaseConsumer):
 
         # Also declare a DLX (dead-letter exchange) if needed
         self._dlx_exchange = await self._channel.declare_exchange(
-            f"{self._exchange_name}_dlx",
+            f"{self._queue_name}_dlx",
             aio_pika.ExchangeType.DIRECT,
             durable=True
         )
