@@ -28,7 +28,7 @@ class MinIOStorage(BaseStorage):
                 access_key=minio_creds['accessKey'],
                 secret_key=minio_creds['secretKey'],
                 secure=minio_creds.get('secure', False),
-                cert_check=False
+                cert_check=os.environ.get('SSL_CERT_FILE', None) != None
             )
             given_url = minio_creds['external_url'] if minio_creds.get('external_url', None) is not None else minio_creds['url']
             self.url = f"https://{given_url}" if minio_creds.get('secure', "false") == "true" else f"http://{given_url}"
@@ -41,7 +41,7 @@ class MinIOStorage(BaseStorage):
                 access_key=os.environ.get('MINIO_ACCESS_KEY'),
                 secret_key=os.environ.get('MINIO_SECRET_KEY'),
                 secure=os.environ.get('MINIO_SECURE', "false") == "true",
-                cert_check=False
+                cert_check=os.environ.get('SSL_CERT_FILE') != None
             )
             given_url = os.environ.get('MINIO_ENDPOINT_EXTERNAL') if os.environ.get('MINIO_ENDPOINT_EXTERNAL', None) is not None else \
             os.environ.get('MINIO_ENDPOINT')
